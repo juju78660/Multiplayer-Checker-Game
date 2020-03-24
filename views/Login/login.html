@@ -62,11 +62,11 @@
 					</div>
 
 					<p class="registerhere">
-					  You don't have an account ? <a href="/Register/register.html" class="registerhere2">Register here</a> 
+					  You don't have an account ? <a href="/register" class="registerhere2">Register here</a> 
 					</p>
 					
 					<p class="resethere">
-                        Forgot password ? <a href="forgetPassword.html" class="resethere2">Reset here</a>
+                        Forgot password ? <a href="/forgetPassword" class="resethere2">Reset here</a>
                     </p>
 					
 					
@@ -102,7 +102,13 @@
 		{
 			if(user)
 			{
-				window.location.href = "main.html";
+				var userId = firebase.auth().currentUser.uid;
+				firebase.database().ref('users/' + userId).set({
+				username: name,
+			    email: email,
+			    profile_picture : imageUrl
+	    		});
+				window.location.href = "/main";
 			}
 		})
 	</script>

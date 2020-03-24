@@ -37,7 +37,7 @@
     </head>
 
     <body>
-        
+        <h1 id="userEmail">Hello !</h1>
         <div class="container-login100-form-btn m-t-32">
             <button id="btn_logout" type="button" class="login100-form-btn">
                 Logout
@@ -70,7 +70,10 @@
             {
                 if(!user)
                 {
-                    window.location.href = "login.html";
+                    window.location.href = "/login";
+                }
+                else{
+                    document.getElementById("userEmail").textContent= "Hello " + user.email + " !";
                 }
             })
         </script>
