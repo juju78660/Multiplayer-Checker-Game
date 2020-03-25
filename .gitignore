@@ -1,4 +1,7 @@
+.gitignore
 /node_modules/
 package-lock.json
 projet_dame.iml
 .idea
+.env
+.DS_Store

@@ -1,6 +1,11 @@
+
 const express = require('express');
 const app = express();
 const port = 3000;
+
+// To use the env variable in the .env file
+require('dotenv').config();
+console.log("MY_VARIABLE: " + process.env.FIREBASE_CONFIG);
 
 app.use(express.static("views"));
 app.use(express.static("views/Home"));
@@ -14,18 +19,8 @@ var firebase = require('firebase');
 require('firebase/auth');
 require('firebase/database');
 
-//  FIREBASE CONFIG
-var firebaseConfig =
-{
-    apiKey: "AIzaSyB-h0fhhciH-F2z9JUp_bbn4QcDzR2zhSo",
-    authDomain: "dames-14e44.firebaseapp.com",
-    databaseURL: "https://dames-14e44.firebaseio.com",
-    projectId: "dames-14e44",
-    storageBucket: "dames-14e44.appspot.com",
-    messagingSenderId: "593473240019",
-    appId: "1:593473240019:web:8a81b758a93a7e08ce8d26",
-    measurementId: "G-HP3VF4RGTK"
-};
+//  FIREBASE CONFIG get the api key in the .env file not commited to hide the key
+var firebaseConfig = process.env.FIREBASE_CONFIG;
 
 firebase.initializeApp(firebaseConfig);
 
