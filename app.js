@@ -5,7 +5,7 @@ const port = 3000;
 
 // To use the env variable in the .env file
 require('dotenv').config();
-console.log("MY_VARIABLE: " + process.env.FIREBASE_CONFIG);
+//console.log("MY_VARIABLE: " + process.env.FIREBASE_CONFIG);
 
 app.use(express.static("views"));
 app.use(express.static("views/Home"));
@@ -23,7 +23,6 @@ require('firebase/database');
 var firebaseConfig = process.env.FIREBASE_CONFIG;
 
 firebase.initializeApp(firebaseConfig);
-
 
 app.get('/', function(req, res){
     res.sendFile('home.html', { root: __dirname + "/views/Home" } );

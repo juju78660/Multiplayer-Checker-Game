@@ -15,6 +15,9 @@ var firebaseConfig =
 
   firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
+  // Recuperation de la bdd
+  var db = firebase.firestore();
+
   $("#btn_login").click(function()
   {
     var email = $("#email").val();
@@ -50,6 +53,13 @@ var firebaseConfig =
         if(password == repassword)
         {
           var result = firebase.auth().createUserWithEmailAndPassword(email,password);
+
+        // Ajout de l'utilisateur a la bdd avec son mail, son nb de victoire et defaite
+        db.collection("users").add({
+          email: email,
+          win: 0,
+          lost: 0
+        })
 
           result.catch(function(error)
           {
