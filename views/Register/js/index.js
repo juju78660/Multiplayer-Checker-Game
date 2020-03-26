@@ -20,33 +20,47 @@ var firebaseConfig =
 
   $("#btn_register").click(function()
   {
+
+    // recuperation des données du formulaire
     var email = $("#email").val();
     var password = $("#password").val();
     var repassword = $("#re_password").val();
+    var game_name = $("#game_name").val();
 
     if(email!="" && password!="" && repassword!="")
     {
         if(password == repassword)
         {
+
+          // Creation de l'utilisateur et verif erreur
           var result = firebase.auth().createUserWithEmailAndPassword(email,password);
-
-        // Ajout de l'utilisateur a la bdd avec son mail, son nb de victoire et defaite
-        db.collection("users/").add({
-          email: email,
-          win: 0,
-          lost: 0
-        })
-
           result.catch(function(error)
           {
             var errorMessage = error.message;
             window.alert("Message: " + errorMessage );
           });
-        }
-        else
-        {
-          window.alert("Passwords do not match");
-        }
+          }
+          else
+          {
+            window.alert("Passwords do not match");
+          }
+
+          // get user
+          var user = firebase.auth().currentUser;
+
+          // Add a new document in collection "users" avec comme nom de doc user.id avec gameName,  email, win, lost
+          db.collection("users").doc(user.uid).set({
+            game_name: game_name,
+            email: email,
+            win: 0,
+            lost: 0
+          })
+          .then(function() {
+            console.log("Document successfully written!");
+          })
+          .catch(function(error) {
+            console.error("Error writing document: ", error);
+          });
     }
     else
     {
