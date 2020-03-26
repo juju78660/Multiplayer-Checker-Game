@@ -14,35 +14,37 @@ var firebase = require('firebase');
 require('firebase/auth');
 require('firebase/database');
 
-//  FIREBASE CONFIG
-var firebaseConfig =
-{
-    apiKey: "AIzaSyB-h0fhhciH-F2z9JUp_bbn4QcDzR2zhSo",
-    authDomain: "dames-14e44.firebaseapp.com",
-    databaseURL: "https://dames-14e44.firebaseio.com",
-    projectId: "dames-14e44",
-    storageBucket: "dames-14e44.appspot.com",
-    messagingSenderId: "593473240019",
-    appId: "1:593473240019:web:8a81b758a93a7e08ce8d26",
-    measurementId: "G-HP3VF4RGTK"
-};
-
-firebase.initializeApp(firebaseConfig);
+// INITIALISE FIREBASE
+var firebaseConfig = require('./firebase.js');
+firebase.initializeApp(firebaseConfig.getFirebaseConfig());
 
 
 app.get('/', function(req, res){
-    res.sendFile('home.html', { root: __dirname + "/views/Home" } );
-    // TO DO: REDIRECTION VERS /main SI L'UTILISATEUR EST DEJA CONNECTE
+    if(!firebase.auth().currentUser){
+        res.sendFile('home.html', { root: __dirname + "/views/Home" } );
+    }
+    else{
+        res.sendFile('main.html', { root: __dirname + "/views/Login" } );
+    }
 });
 
 /****** Routes *******/
-
 app.get('/register', function(req, res) {
-  res.sendFile('register.html', { root: __dirname + "/views/Register" } );
+    if(!firebase.auth().currentUser){
+        res.sendFile('register.html', { root: __dirname + "/views/Register" } );
+    }
+    else{
+        res.sendFile('main.html', { root: __dirname + "/views/Login" } );
+    }
 });
 
 app.get('/login', function(req, res) {
-  res.sendFile('login.html', { root: __dirname + "/views/Login" } );
+    if(!firebase.auth().currentUser){
+        res.sendFile('login.html', { root: __dirname + "/views/Login" } );
+    }
+    else{
+        res.sendFile('main.html', { root: __dirname + "/views/Login" } );
+    }
 });
 
 app.get('/forgetPassword', function(req, res) {
@@ -50,5 +52,10 @@ app.get('/forgetPassword', function(req, res) {
 });
 
 app.get('/main', function(req, res) {
-  res.sendFile('main.html', { root: __dirname + "/views/Login" } );
+    if(!firebase.auth().currentUser){
+        res.sendFile('login.html', { root: __dirname + "/views/Login" } );
+    }
+    else{
+        res.sendFile('main.html', { root: __dirname + "/views/Login" } );
+    }
 });
