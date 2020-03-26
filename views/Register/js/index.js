@@ -18,30 +18,6 @@ var firebaseConfig =
   // Recuperation de la bdd
   var db = firebase.firestore();
 
-  $("#btn_login").click(function()
-  {
-    var email = $("#email").val();
-    var password = $("#password").val();
-
-    if(email!="" && password!="")
-    {
-        var result = firebase.auth().signInWithEmailAndPassword(email, password);
-        result.catch(function(error)
-        {
-            var errorCode = error.code;
-            var errorMessage = error.message;
-
-            console.log(errorCode);
-            console.log(errorMessage);
-            window.alert("Message: " + errorMessage );
-        });
-    }
-    else
-    {
-        window.alert("Please fill out all fields!");
-    }
-  });
-
   $("#btn_register").click(function()
   {
     var email = $("#email").val();
@@ -55,7 +31,7 @@ var firebaseConfig =
           var result = firebase.auth().createUserWithEmailAndPassword(email,password);
 
         // Ajout de l'utilisateur a la bdd avec son mail, son nb de victoire et defaite
-        db.collection("users").add({
+        db.collection("users/").add({
           email: email,
           win: 0,
           lost: 0
@@ -63,11 +39,7 @@ var firebaseConfig =
 
           result.catch(function(error)
           {
-            var errorCode = error.code;
             var errorMessage = error.message;
-
-            console.log(errorCode);
-            console.log(errorMessage);
             window.alert("Message: " + errorMessage );
           });
         }
@@ -80,9 +52,4 @@ var firebaseConfig =
     {
         window.alert("Please fill out all fields!");
     }
-  });
-
-  $("#btn_logout").click(function()
-  {
-    firebase.auth().signOut();
   });

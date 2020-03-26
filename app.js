@@ -44,5 +44,5 @@ app.get('/forgetPassword', function(req, res) {
 });
 
 app.get('/main', function(req, res) {
-  res.sendFile('main.html', { root: __dirname + "/views/Login" } );
+  res.sendFile('main.html', { root: __dirname + "/views" } );
 });
