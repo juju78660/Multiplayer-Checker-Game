@@ -154,22 +154,25 @@ app.get('/login', function(req, res) {
 });
 
 app.post('/login', async function(req, res) {
+    var x = true;
+
     console.log("/login post");
     try {
         var email = req.body.email;
         var password = req.body.password;
 
         firebase.auth().signInWithEmailAndPassword(email, password).then(function(firebaseUser) {
-            res.redirect('/main');
-            /*firebase.auth().onAuthStateChanged(function(user) {
-                if (user) {
+            //res.redirect('/main');
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user && x) {
+                    x = false;
                     console.log("username:" + user.displayName + "-" + "UID:" + user.uid);
-                    //res.render('main', { username: user.displayName, uid: user.uid });
-                    res.redirect("/main");
-                    res.end();
-                    return;
+                    res.render('main', { username: user.displayName, uid: user.uid });
+                    //res.redirect("/main");
+                    /*res.end();
+                    return;*/
                 }
-            });*/
+            });
         })
         .catch(function(error) {
             var errorCode = error.code;
