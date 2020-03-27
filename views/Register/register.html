@@ -18,8 +18,9 @@
     <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-analytics.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-storage	.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-storage.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-firestore.js"></script>
+
 
 </head>
 <body>
@@ -30,39 +31,32 @@
             <!-- <img src="images/signup-bg.jpg" alt=""> -->
             <div class="container">
                 <div class="signup-content">
-                    <form method="POST" id="signup-form" class="signup-form">
+                    <form action="/register" method="POST">
                         <h2 class="form-title">Create account</h2>
 
-                        <!-- <div class="form-group">
-                            <input type="text" class="form-input" name="name" id="name" placeholder="Your Username"/>
-                        </div> -->
-
                         <div class="form-group">
-                            <input type="email" id="email" class="form-input" name="email" placeholder="Your Email"/>
-                        </div>
-                        
-                        <div class="form-group">
-                            <input type="text" id="game_name" class="form-input" name="game_name" placeholder="Game name"/>
+                            <input type="text" id="username" class="form-input" name="username"  placeholder="Your Username" value="{{ username }}" required/>
                         </div>
 
                         <div class="form-group">
-                            <input type="text" class="form-input" name="password" id="password" placeholder="Password"/>
+                            <input type="email" id="email" class="form-input" name="email" placeholder="Your Email" value="{{ email }}" required/>
+                        </div>
+
+                        <div class="form-group">
+                            <input type="password" class="form-input" name="password" id="password" placeholder="Password" value="{{ password }}" required/>
                             <span toggle="#password"  class="zmdi zmdi-eye field-icon toggle-password"></span>
                         </div>
 
                         <div class="form-group">
-                            <input type="password"  class="form-input" name="re_password" id="re_password" placeholder="Repeat your password"/>
+                            <input type="password"  class="form-input" name="re_password" id="re_password" placeholder="Repeat your password" value="{{ re_password }}" required/>
                         </div>
-
+                        <p><spam style="color: red;"><b>{{ error_message }}</b></spam></p>
                         <div class="form-group">
-                            <button id="btn_register" type="button" class="form-submit">
-                                Register
-                            </button>
+                            <input type="submit" name="submit" value="Register" id="submit" class="form-submit">
                         </div>
-
                     </form>
                     <p class="loginhere">
-                        Have already an account ? <a href="/login" class="loginhere-link">Login here</a>
+                        Already have an account ? <a href="/login" class="loginhere-link">Login here</a>
                     </p>
                 </div>
             </div>
@@ -74,16 +68,5 @@
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="js/main.js"></script>
 
-    
-	<script src="js/index.js"></script>
-	<script>
-		firebase.auth().onAuthStateChanged(function(user)
-		{
-			if(user)
-			{
-                window.location.href = "/main";
-			}
-		})
-	</script>
 </body>
 </html>

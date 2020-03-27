@@ -27,11 +27,12 @@
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
 
-<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-analytics.js"></script>
-<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-storage	.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-analytics.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-database.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-storage.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-firestore.js"></script>
 
 </head>
 <body>
@@ -42,23 +43,21 @@
 				<span class="login100-form-title p-b-41">
 					Account Login
 				</span>
-				<form class="login100-form validate-form p-b-33 p-t-5">
+				<form action="/login" method="POST" class="login100-form validate-form p-b-33 p-t-5">
 
 					<div class="wrap-input100 validate-input" data-validate = "Enter email">
-						<input id="email" class="input100" type="email" name="username" placeholder="Email">
+						<input id="email" class="input100" type="email" name="email" placeholder="Email" value="{{ email }}" required>
 						<span class="focus-input100" data-placeholder="&#xe82a;"></span>
 					</div>
 
 					<div class="wrap-input100 validate-input" data-validate="Enter password">
-						<input id="password" class="input100" type="password" name="pass" placeholder="Password">
+						<input id="password" class="input100" type="password" name="password" placeholder="Password" value="{{ password }}" required>
 						<span class="focus-input100" data-placeholder="&#xe80f;"></span>
 					</div>
 
-
+					<p><spam style="color: red;"><b>{{ error_message }}</b></spam></p>
 					<div class="container-login100-form-btn m-t-32">
-						<button id="btn_login" type="button" class="login100-form-btn">
-							Login
-						</button>
+						<input type="submit" name="submit" value="Login" id="btn_login" class="login100-form-btn">
 					</div>
 
 					<p class="registerhere">
@@ -97,21 +96,7 @@
 	<script src="js/main.js"></script>
 
 	<script src="js/index.js"></script>
-	<script>
-		firebase.auth().onAuthStateChanged(function(user)
-		{
-			if(user)
-			{
-				/*var userId = firebase.auth().currentUser.uid;
-				firebase.database().ref('users/' + userId).set({
-				username: name,
-			    email: email,
-			    profile_picture : imageUrl
-	    		});*/
-				window.location.href = "/main";
-			}
-		})
-	</script>
+
 
 </body>
 </html>

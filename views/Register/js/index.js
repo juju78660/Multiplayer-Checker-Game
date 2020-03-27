@@ -1,69 +1,71 @@
-var firebaseConfig =
-{   
-    apiKey: "AIzaSyB-h0fhhciH-F2z9JUp_bbn4QcDzR2zhSo",
-    authDomain: "dames-14e44.firebaseapp.com",
-    databaseURL: "https://dames-14e44.firebaseio.com",
-    projectId: "dames-14e44",
-    storageBucket: "dames-14e44.appspot.com",
-    messagingSenderId: "593473240019",
-    appId: "1:593473240019:web:8a81b758a93a7e08ce8d26",
-    measurementId: "G-HP3VF4RGTK"
-  };
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  firebase.analytics();
+// INITIALISE FIREBASE
+/*var firebase = require('./firebase.js');
+firebase.initializeApp(firebase.getFirebaseConfig());*/
+console.log("");
+// PEUT ETRE A SUPPRIMER ???
+/*
+firebase.analytics();
 
-  firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-  // Recuperation de la bdd
-  var db = firebase.firestore();
+$("#btn_register").click(function()
+{
+	console.log("MDRRR");
+	/*
+	var db = firebase.firestore();
 
-  $("#btn_register").click(function()
-  {
+	var username = $("#username").val();
+	var email = $("#email").val();
+	var password = $("#password").val();
+	var repassword = $("#re_password").val();
 
-    // recuperation des données du formulaire
-    var email = $("#email").val();
-    var password = $("#password").val();
-    var repassword = $("#re_password").val();
-    var game_name = $("#game_name").val();
+	// DECONNECTE L'UTILISATEUR POSSIBLEMENT DEJA CONNECTE
+	firebase.auth().signOut();
 
-    if(email!="" && password!="" && repassword!="")
-    {
-        if(password == repassword)
-        {
+	if(username!="" && email!="" && password!="" && repassword!="")
+	{
+		if(password == repassword)
+		{
+			var result = firebase.auth().createUserWithEmailAndPassword(email,password);
 
-          // Creation de l'utilisateur et verif erreur
-          var result = firebase.auth().createUserWithEmailAndPassword(email,password);
-          result.catch(function(error)
-          {
-            var errorMessage = error.message;
-            window.alert("Message: " + errorMessage );
-          });
-          }
-          else
-          {
-            window.alert("Passwords do not match");
-          }
+			// AJOUT UTILISATEUR BDD
+			firebase.auth().onAuthStateChanged(function(user)
+			{
+				if(user){
+					var userUID = firebase.auth().currentUser.uid;
+					let data = {
+						username : username,
+						email: email,
+						win: 0,
+						lost: 0
+					};
+					db.collection("users").doc(userUID).set(data)
+					.then(function() {
+						console.log("User {UID: " + userUID + ",email:" + firebase.auth().currentUser.email + "} had been added");
+					})
+					.catch(function(error) {
+						console.error("Error adding user: ", error);
+					});
+				}
+			});
+			result.catch(function(error)
+			{
+				var errorCode = error.code;
+				var errorMessage = error.message;
 
-          // get user
-          var user = firebase.auth().currentUser;
-
-          // Add a new document in collection "users" avec comme nom de doc user.id avec gameName,  email, win, lost
-          db.collection("users").doc(user.uid).set({
-            game_name: game_name,
-            email: email,
-            win: 0,
-            lost: 0
-          })
-          .then(function() {
-            console.log("Document successfully written!");
-          })
-          .catch(function(error) {
-            console.error("Error writing document: ", error);
-          });
-    }
-    else
-    {
-        window.alert("Please fill out all fields!");
-    }
-  });
+				console.log(errorCode);
+				console.log(errorMessage);
+				window.alert("Message: " + errorMessage );
+			});
+		}
+		else
+		{
+			window.alert("Passwords do not match");
+		}
+	}
+	else
+	{
+		window.alert("Please fill out all fields!");
+	}
+});
+*/

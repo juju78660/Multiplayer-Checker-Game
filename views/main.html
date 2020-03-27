@@ -32,16 +32,15 @@
         <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-analytics.js"></script>
         <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-auth.js"></script>
         <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-database.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-storage	.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-storage.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-firestore.js"></script>
 
     </head>
 
     <body>
-        <h1 id="userEmail">Hello !</h1>
+        <p><b>Hello {{ username }} (UID: {{ uid }} )</b></p>
         <div class="container-login100-form-btn m-t-32">
-            <button id="btn_logout" type="button" class="login100-form-btn">
-                Logout
-            </button>
+            <button id="btn_logout" onclick="window.location='/disconnect';" class="login100-form-btn">Logout</button>
         </div>
 
         <div id="dropDownSelect1"></div>
@@ -62,22 +61,15 @@
 	<script src="vendor/countdowntime/countdowntime.js"></script>
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
-
-        <script src="js/index.js"></script>
-
-        <script>
-            firebase.auth().onAuthStateChanged(function(user)
-            {
-                if(!user)
-                {
-                    window.location.href = "/login";
-                }
-                else{
-                    document.getElementById("userEmail").textContent= "Hello " + user.email + " !";
-                }
-            })
-        </script>
-	
-
+    <script src="./app.js"></script>
     </body>
+
+    <script>
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                console.log("username:" + user.displayName + "-" + "UID:" + user.uid);
+
+            }
+        });
+    </script>
 </html>

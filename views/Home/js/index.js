@@ -1,21 +1,46 @@
-var firebaseConfig =
-{   
-    apiKey: "AIzaSyB-h0fhhciH-F2z9JUp_bbn4QcDzR2zhSo",
-    authDomain: "dames-14e44.firebaseapp.com",
-    databaseURL: "https://dames-14e44.firebaseio.com",
-    projectId: "dames-14e44",
-    storageBucket: "dames-14e44.appspot.com",
-    messagingSenderId: "593473240019",
-    appId: "1:593473240019:web:8a81b758a93a7e08ce8d26",
-    measurementId: "G-HP3VF4RGTK"
-  };
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  firebase.analytics();
+// INITIALISE FIREBASE
+/*var firebaseConfig = require('./firebase.js');
+firebase.initializeApp(firebaseConfig.getFirebaseConfig());*/
+console.log("");
+// PEUT ETRE A SUPPRIMER ???
+/*
+firebase.analytics();
 
-  firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-  $("#btn_logout").click(function()
-  {
+// AFFICHAGE
+firebase.auth().onAuthStateChanged(function(user)
+{
+    var db = firebase.firestore();
+    if(!user)
+    {
+        window.location.href = "/login";
+    }
+    else{
+        // LECTURE BD
+        var userUID = firebase.auth().currentUser.uid;
+
+        let userRef = db.collection('users').doc(userUID);
+        let getDoc = userRef.get()
+            .then(node => {
+                if (!node.exists) {
+                    console.log('This user doesn\'t exist!');
+                } else {
+                    console.log('Document data:' + node.username);
+                }
+            })
+            .catch(err => {
+                console.log('Error getting document', err);
+            });
+
+        return firebase.database().ref('/users/' + userUID).once('value').then(function(snapshot) {
+            var username = (snapshot.val() && snapshot.val().userUID) || 'Anonymous';
+            document.getElementById("userInfo").textContent= "Hello " + username + " (UID:"+ userUID + ") !";
+        });
+    }
+})
+
+$("#btn_logout").click(function()
+{
     firebase.auth().signOut();
-  });
+});*/
