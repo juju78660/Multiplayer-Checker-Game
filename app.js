@@ -1,9 +1,18 @@
 const express = require('express');
-const app = express();
 const bodyP = require('body-parser');
+var nunjucks = require('nunjucks');
+const http = require('http');
+const socketIO = require('socket.io');
+var firebase = require('firebase');
+var firebaseConfig = require('./js/firebase.js');
+var user = require('./js/user');
+require('firebase/auth');
+require('firebase/database');
+
+// INITIALIZE THE APP
+const app = express();
 app.use(bodyP.json());
 app.use(bodyP.urlencoded({ extended: true }));
-const port = 3000;
 
 app.use(express.static("views"));
 app.use(express.static("views/Home"));
@@ -11,8 +20,6 @@ app.use(express.static("views/Login"));
 app.use(express.static("views/Register"));
 
 // ENGINE USE TO RENDER
-var nunjucks = require('nunjucks');
-
 nunjucks.configure('views', {
     express: app,
     autoescape: true
@@ -20,18 +27,28 @@ nunjucks.configure('views', {
 app.set('view engine', 'html');
 
 
-
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
-
-// *** FIREBASE ***
-var firebase = require('firebase');
-require('firebase/auth');
-require('firebase/database');
-
 // INITIALISE FIREBASE
-var firebaseConfig = require('./firebase.js');
 firebase.initializeApp(firebaseConfig.getFirebaseConfig());
 
+// SOCKET IO NEED OUR OWN HTTP SERVER
+const port = 3000;
+let server = http.createServer(app);
+let io = socketIO(server);
+
+let connected_users = {};
+let nbConnect = 0;
+
+// the server listen for a connection
+io.on('connection', (socket) => {
+
+    nbConnect = nbConnect +1;
+    //console.log("nombre user connecté :" + nbConnect);
+    console.log("user connected");
+    
+    socket.on('disconnect', () => {
+        console.log("disconected")
+    });
+});
 
 app.get('/', function(req, res){
     console.log("Utilisateur: " + firebase.auth().currentUser);
@@ -208,3 +225,7 @@ app.get('/disconnect', function(req, res) {
     }
     res.redirect('/');
 });
+
+
+// HAVE REPLACE app by server
+server.listen(port, () => console.log(`Example app listening on port ${port}!`));

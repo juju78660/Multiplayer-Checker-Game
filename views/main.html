@@ -28,6 +28,13 @@
         <link rel="stylesheet" type="text/css" href="css/main.css">
     <!--===============================================================================================-->
     
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="main.js"></script>
+        <script type="text/javascript">
+            let socker = io();
+        </script>
+        
+ 
         <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-app.js"></script>
         <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-analytics.js"></script>
         <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-auth.js"></script>
@@ -60,16 +67,5 @@
 <!--===============================================================================================-->
 	<script src="vendor/countdowntime/countdowntime.js"></script>
 <!--===============================================================================================-->
-	<script src="js/main.js"></script>
-    <script src="./app.js"></script>
     </body>
-
-    <script>
-        firebase.auth().onAuthStateChanged(function(user) {
-            if (user) {
-                console.log("username:" + user.displayName + "-" + "UID:" + user.uid);
-
-            }
-        });
-    </script>
 </html>
