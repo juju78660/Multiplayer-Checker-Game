@@ -36,6 +36,7 @@ let server = http.createServer(app);
 let io = socketIO(server);
 
 let connected_users = [];
+
 let nbConnect = 0;
 
 // the server listen for a connection
@@ -175,13 +176,14 @@ app.post('/login', async function(req, res) {
                 if (user && x) {
 
                     //keep track number user connected and who
+                    var item = "It work bitch";
                     connected_users.push(user.displayName);
                     nbConnect++;
                     console.log("Nb user : " + nbConnect);
                     console.log("User connected : " + connected_users);
 
                     x = false;
-                    res.render('main', { username: user.displayName, uid: user.uid });
+                    res.render('main', { username: user.displayName, uid: user.uid, users: connected_users });
                 }
             });
         })

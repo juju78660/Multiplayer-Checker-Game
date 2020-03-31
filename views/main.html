@@ -42,6 +42,15 @@
 
     <body>
         <p><b>Hello {{ username }} (UID: {{ uid }} )</b></p>
+
+        <ul>
+            {% for user in users %}
+              <li>{{ user }}</li>
+            {% else %}
+              <li>This would display if the 'item' collection were empty</li>
+            {% endfor %}
+        </ul>
+
         <div class="container-login100-form-btn m-t-32">
             <button id="btn_logout" onclick="window.location='/disconnect';" class="login100-form-btn">Logout</button>
         </div>
