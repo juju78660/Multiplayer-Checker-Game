@@ -51,22 +51,26 @@ io.on('connection', (socket) => {
 
 app.get('/', function(req, res){
     console.log("Utilisateur: " + firebase.auth().currentUser);
-    if(!firebase.auth().currentUser){
+    
+    // Commenter ca pour pouvoir connecter plusieurs utilisateur
+    //if(!firebase.auth().currentUser){
         res.sendFile('home.html', { root: __dirname + "/views/Home" } );
-    }
-    else{
-        res.redirect('/main');
-    }
+    //}
+
+    //else{
+    //    res.redirect('/main');
+    //}
 });
 
 /****** Routes *******/
 app.get('/register', function(req, res) {
-    if(!firebase.auth().currentUser){
+    // Commenter ca pour pouvoir connecter plusieurs utilisateur
+    //if(!firebase.auth().currentUser){
         res.render('Register/register');
-    }
-    else{
-        res.redirect('/main');
-    }
+    //}
+    //else{
+    //    res.redirect('/main');
+    //}
 });
 
 app.post('/register', async function(req, res) {
@@ -122,6 +126,11 @@ app.post('/register', async function(req, res) {
                     };
                     db.collection("users").doc(userUID).set(data)
                         .then(function() {
+
+                            //keep track number user connected
+                            nbConnect++;
+                            console.log("nb user : " + nbConnect);
+
                             console.log("User {Username:" + user.displayName + " - UID:" + userUID + " - email:" + user.email + "} has been added to the DB");
                             res.render('main', { username: user.displayName, uid: user.uid });
                             return;
@@ -161,12 +170,13 @@ app.post('/register', async function(req, res) {
 
 app.get('/login', function(req, res) {
     var user = firebase.auth().currentUser;
-    if(!user){
+    // Commenter ca pour pouvoir connecter plusieurs utilisateur
+    //if(!user){
         res.render('Login/login');
-    }
-    else{
-        res.redirect("/main");
-    }
+    //}
+    //else{
+    //    res.redirect("/main");
+    //}
 });
 
 app.post('/login', async function(req, res) {
@@ -181,6 +191,11 @@ app.post('/login', async function(req, res) {
             //res.redirect('/main');
             firebase.auth().onAuthStateChanged(function(user) {
                 if (user && x) {
+
+                    //keep track number user connected
+                    nbConnect++;
+                    console.log("Nb user : " + nbConnect);
+
                     x = false;
                     console.log("username:" + user.displayName + "-" + "UID:" + user.uid);
                     res.render('main', { username: user.displayName, uid: user.uid });
