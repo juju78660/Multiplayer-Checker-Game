@@ -41,12 +41,11 @@ let nbConnect = 0;
 // the server listen for a connection
 io.on('connection', (socket) => {
 
-    nbConnect = nbConnect +1;
-    //console.log("nombre user connecté :" + nbConnect);
-    console.log("user connected");
+    //nbConnect = nbConnect +1;
+    console.log(" A new user just connected server side");
     
     socket.on('disconnect', () => {
-        console.log("disconected")
+        console.log("disconected from server side")
     });
 });
 
