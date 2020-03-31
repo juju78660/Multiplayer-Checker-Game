@@ -5,7 +5,7 @@ const http = require('http');
 const socketIO = require('socket.io');
 var firebase = require('firebase');
 var firebaseConfig = require('./js/firebase.js');
-var user = require('./js/user');
+var ClassUser = require('./js/user');
 require('firebase/auth');
 require('firebase/database');
 
@@ -35,7 +35,7 @@ const port = 3000;
 let server = http.createServer(app);
 let io = socketIO(server);
 
-let connected_users = {};
+let connected_users = [];
 let nbConnect = 0;
 
 // the server listen for a connection
@@ -50,27 +50,15 @@ io.on('connection', (socket) => {
 });
 
 app.get('/', function(req, res){
+    // Retirer if else pour pouvoir connecter plusieurs utilisateur
     console.log("Utilisateur: " + firebase.auth().currentUser);
-    
-    // Commenter ca pour pouvoir connecter plusieurs utilisateur
-    //if(!firebase.auth().currentUser){
-        res.sendFile('home.html', { root: __dirname + "/views/Home" } );
-    //}
-
-    //else{
-    //    res.redirect('/main');
-    //}
+    res.sendFile('home.html', { root: __dirname + "/views/Home" } );
 });
 
 /****** Routes *******/
 app.get('/register', function(req, res) {
-    // Commenter ca pour pouvoir connecter plusieurs utilisateur
-    //if(!firebase.auth().currentUser){
-        res.render('Register/register');
-    //}
-    //else{
-    //    res.redirect('/main');
-    //}
+    // Retirer if else pour pouvoir connecter plusieurs utilisateur
+    res.render('Register/register');
 });
 
 app.post('/register', async function(req, res) {
@@ -127,9 +115,11 @@ app.post('/register', async function(req, res) {
                     db.collection("users").doc(userUID).set(data)
                         .then(function() {
 
-                            //keep track number user connected
+                            //keep track number user connected and who
+                            connected_users.push(user.displayName);
                             nbConnect++;
-                            console.log("nb user : " + nbConnect);
+                            console.log("Nb user : " + nbConnect);
+                            console.log("User connected : " + connected_users);
 
                             console.log("User {Username:" + user.displayName + " - UID:" + userUID + " - email:" + user.email + "} has been added to the DB");
                             res.render('main', { username: user.displayName, uid: user.uid });
@@ -170,38 +160,28 @@ app.post('/register', async function(req, res) {
 
 app.get('/login', function(req, res) {
     var user = firebase.auth().currentUser;
-    // Commenter ca pour pouvoir connecter plusieurs utilisateur
-    //if(!user){
+    // retirer if else pour pouvoir connecter plusieurs utilisateur
         res.render('Login/login');
-    //}
-    //else{
-    //    res.redirect("/main");
-    //}
 });
 
 app.post('/login', async function(req, res) {
     var x = true;
-
-    console.log("/login post");
     try {
         var email = req.body.email;
         var password = req.body.password;
 
         firebase.auth().signInWithEmailAndPassword(email, password).then(function(firebaseUser) {
-            //res.redirect('/main');
             firebase.auth().onAuthStateChanged(function(user) {
                 if (user && x) {
 
-                    //keep track number user connected
+                    //keep track number user connected and who
+                    connected_users.push(user.displayName);
                     nbConnect++;
                     console.log("Nb user : " + nbConnect);
+                    console.log("User connected : " + connected_users);
 
                     x = false;
-                    console.log("username:" + user.displayName + "-" + "UID:" + user.uid);
                     res.render('main', { username: user.displayName, uid: user.uid });
-                    //res.redirect("/main");
-                    /*res.end();
-                    return;*/
                 }
             });
         })
