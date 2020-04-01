@@ -5,9 +5,6 @@ const http = require('http');
 const socketIO = require('socket.io');
 var firebase = require('firebase');
 var firebaseConfig = require('./js/firebase.js');
-var ClassUser = require('./js/user');
-require('firebase/auth');
-require('firebase/database');
 
 // INITIALIZE THE APP
 const app = express();
@@ -18,6 +15,7 @@ app.use(express.static("views"));
 app.use(express.static("views/Home"));
 app.use(express.static("views/Login"));
 app.use(express.static("views/Register"));
+app.use(express.static("views/Main"))
 
 // ENGINE USE TO RENDER
 nunjucks.configure('views', {
@@ -35,8 +33,8 @@ const port = 3000;
 let server = http.createServer(app);
 let io = socketIO(server);
 
+// Track users
 let connected_users = [];
-
 let nbConnect = 0;
 
 // the server listen for a connection
@@ -44,19 +42,27 @@ io.on('connection', (socket) => {
 
     //nbConnect = nbConnect +1;
     console.log(" A new user just connected server side");
+
+    socket.on('logout', (message) => {
+        console.log("hey the message : ", message);
+    });
     
     socket.on('disconnect', () => {
+        // Supprimer l'utilisateur de la liste, retirer 1 du compteur
+        // connected_users.splice(connected_users.lastIndexOf(user.displayName) - 1, 1);
+        nbConnect--;
+        console.log("nb connected : " + nbConnect);
         console.log("disconected from server side")
     });
 });
 
+/****** Routes *******/
 app.get('/', function(req, res){
     // Retirer if else pour pouvoir connecter plusieurs utilisateur
     console.log("Utilisateur: " + firebase.auth().currentUser);
     res.sendFile('home.html', { root: __dirname + "/views/Home" } );
 });
 
-/****** Routes *******/
 app.get('/register', function(req, res) {
     // Retirer if else pour pouvoir connecter plusieurs utilisateur
     res.render('Register/register');
@@ -176,14 +182,13 @@ app.post('/login', async function(req, res) {
                 if (user && x) {
 
                     //keep track number user connected and who
-                    var item = "It work bitch";
                     connected_users.push(user.displayName);
                     nbConnect++;
                     console.log("Nb user : " + nbConnect);
                     console.log("User connected : " + connected_users);
 
                     x = false;
-                    res.render('main', { username: user.displayName, uid: user.uid, users: connected_users });
+                    res.render('Main/main', {  user: user, connected_users: connected_users, nbConnect: nbConnect });
                 }
             });
         })
@@ -211,7 +216,7 @@ app.get('/main', function(req, res) {
         res.redirect('/login');
     }
     else{
-        res.sendFile('main.html', { root: __dirname + "/views" } );
+        res.sendFile('Main/main.html', { root: __dirname + "/views" } );
     }
 });
 
