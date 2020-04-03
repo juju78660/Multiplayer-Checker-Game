@@ -12,8 +12,13 @@ socket.on('disconnect', function () {
 const logout = document.getElementById('btn_logout');
 
 logout.addEventListener('click', function () {
-    socket.emit('logout', {
+    socket.emit('NewLogout', {
         user: "user",
         text: "Mamba out"
     });
 });
+
+socket.on("updateUserConnected", function (users) {
+    console.log("The updated list is ", users);
+    //let ol = document.createElement('ol');
+})

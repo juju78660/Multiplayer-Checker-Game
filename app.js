@@ -33,29 +33,6 @@ const port = 3000;
 let server = http.createServer(app);
 let io = socketIO(server);
 
-// Track users
-let connected_users = [];
-let nbConnect = 0;
-
-// the server listen for a connection
-io.on('connection', (socket) => {
-
-    //nbConnect = nbConnect +1;
-    console.log(" A new user just connected server side");
-
-    socket.on('logout', (message) => {
-        console.log("hey the message : ", message);
-    });
-    
-    socket.on('disconnect', () => {
-        // Supprimer l'utilisateur de la liste, retirer 1 du compteur
-        // connected_users.splice(connected_users.lastIndexOf(user.displayName) - 1, 1);
-        nbConnect--;
-        console.log("nb connected : " + nbConnect);
-        console.log("disconected from server side")
-    });
-});
-
 /****** Routes *******/
 app.get('/', function(req, res){
     // Retirer if else pour pouvoir connecter plusieurs utilisateur
@@ -121,13 +98,6 @@ app.post('/register', async function(req, res) {
                     };
                     db.collection("users").doc(userUID).set(data)
                         .then(function() {
-
-                            //keep track number user connected and who
-                            connected_users.push(user.displayName);
-                            nbConnect++;
-                            console.log("Nb user : " + nbConnect);
-                            console.log("User connected : " + connected_users);
-
                             console.log("User {Username:" + user.displayName + " - UID:" + userUID + " - email:" + user.email + "} has been added to the DB");
                             res.render('main', { username: user.displayName, uid: user.uid });
                             return;
@@ -180,15 +150,8 @@ app.post('/login', async function(req, res) {
         firebase.auth().signInWithEmailAndPassword(email, password).then(function(firebaseUser) {
             firebase.auth().onAuthStateChanged(function(user) {
                 if (user && x) {
-
-                    //keep track number user connected and who
-                    connected_users.push(user.displayName);
-                    nbConnect++;
-                    console.log("Nb user : " + nbConnect);
-                    console.log("User connected : " + connected_users);
-
                     x = false;
-                    res.render('Main/main', {  user: user, connected_users: connected_users, nbConnect: nbConnect });
+                    res.render('Main/main', {  user: user, connected_users: connected_users });
                 }
             });
         })
@@ -227,6 +190,39 @@ app.get('/disconnect', function(req, res) {
     res.redirect('/');
 });
 
+// Track users
+let connected_users = [];
+
+// the server listen for a connection
+io.on('connection', (socket) => {
+
+    user = firebase.auth().currentUser;
+
+    // Track users
+    if (user) {
+
+        connected_users.push(user.displayName);
+        console.log("User connected : " + connected_users);
+
+        // emettre une socket avec la nouvelle list pour tous les connecté
+        io.emit('updateUserConnected', connected_users);
+        console.log(" A new user just connected server side");
+    
+        // Update list when user logout
+        socket.on('NewLogout', (message) => {
+            
+            // Remove the user from the list and send it to the front
+            connected_users.splice(connected_users.lastIndexOf(user.displayName) - 1, 1);
+            io.emit('updateUserConnected', connected_users);
+        });
+    
+        socket.on('disconnect', () => {
+            console.log("disconected from server side")
+            connected_users.splice(connected_users.lastIndexOf(user.displayName) - 1, 1);
+            io.emit('updateUserConnected', connected_users);
+        });
+    }
+});
 
 // HAVE REPLACE app by server
 server.listen(port, () => console.log(`Example app listening on port ${port}!`));

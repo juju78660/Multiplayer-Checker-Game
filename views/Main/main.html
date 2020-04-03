@@ -43,10 +43,10 @@
     <body>
         <p><b>Hello {{ user.displayName }} (UID: {{ user.uid }} )</b></p>
 
-        <ul>
+        <div id="UsersList"></div>
+        <ul id="listUser">
             {% for user in connected_users %}
               <li>{{ user }}</li>
-              <li>Nb connected : {{ nbConnect }}</li>
             {% else %}
               <li>This would display if the 'item' collection were empty</li>
             {% endfor %}
