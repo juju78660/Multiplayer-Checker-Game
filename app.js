@@ -5,6 +5,9 @@ const http = require('http');
 const socketIO = require('socket.io');
 var firebase = require('firebase');
 var firebaseConfig = require('./js/firebase.js');
+const { userObj } = require('./js/userObj');
+const { Users } = require('./js/Users');
+
 
 // INITIALIZE THE APP
 const app = express();
@@ -151,7 +154,7 @@ app.post('/login', async function(req, res) {
             firebase.auth().onAuthStateChanged(function(user) {
                 if (user && x) {
                     x = false;
-                    res.render('Main/main', {  user: user, connected_users: connected_users });
+                    res.render('Main/main', {  user: user });
                 }
             });
         })
@@ -190,36 +193,33 @@ app.get('/disconnect', function(req, res) {
     res.redirect('/');
 });
 
-// Track users
-let connected_users = [];
+let users = new Users();
 
 // the server listen for a connection
 io.on('connection', (socket) => {
 
     user = firebase.auth().currentUser;
-
-    // Track users
+    
     if (user) {
 
-        connected_users.push(user.displayName);
-        console.log("User connected : " + connected_users);
+        // Create userobj and add to users
+        let userobj = new userObj(socket.id, user.uid, user.displayName);
+        users.addUser(userobj);
+        console.log("User connected : " + users.getUser());
 
-        // emettre une socket avec la nouvelle list pour tous les connecté
-        io.emit('updateUserConnected', connected_users);
-        console.log(" A new user just connected server side");
+        // Send update list to front
+        io.emit('updateUserConnected', users.getUsers());
     
-        // Update list when user logout
+        // Remove the user from the list and send it to the front
         socket.on('NewLogout', (message) => {
-            
-            // Remove the user from the list and send it to the front
-            connected_users.splice(connected_users.lastIndexOf(user.displayName) - 1, 1);
-            io.emit('updateUserConnected', connected_users);
+            users.removeUser(userobj.getIdUser());
+            io.emit('updateUserConnected', users.getUsers());
         });
-    
+
+        // Remove the user from the list and send it to the front 
         socket.on('disconnect', () => {
-            console.log("disconected from server side")
-            connected_users.splice(connected_users.lastIndexOf(user.displayName) - 1, 1);
-            io.emit('updateUserConnected', connected_users);
+            users.removeUser(userobj.getIdUser());
+            io.emit('updateUserConnected', users.getUsers());
         });
     }
 });
