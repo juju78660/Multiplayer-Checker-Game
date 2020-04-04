@@ -39,7 +39,6 @@ let io = socketIO(server);
 /****** Routes *******/
 app.get('/', function(req, res){
     // Retirer if else pour pouvoir connecter plusieurs utilisateur
-    console.log("Utilisateur: " + firebase.auth().currentUser);
     res.sendFile('home.html', { root: __dirname + "/views/Home" } );
 });
 
@@ -77,19 +76,15 @@ app.post('/register', async function(req, res) {
                 re_password: req.body.re_password
             });
         });
-        console.log("Account email:" + email + " successfully created (Username:" + username + ")");
 
         // AJOUT UTILISATEUR BD
         firebase.auth().onAuthStateChanged(function(user)
         {
             if(user){
-                console.log("Utilisateur co: " + user.uid);
-
                 // ADD USERNAME INFO TO AUTH SYSTEM
                 user.updateProfile({
                     displayName: username
                 }).then(function() {
-                    console.log("Username set to:" + username);
 
                     // ADD USER TO THE DB
                     var userUID = user.uid;
@@ -101,21 +96,19 @@ app.post('/register', async function(req, res) {
                     };
                     db.collection("users").doc(userUID).set(data)
                         .then(function() {
-                            console.log("User {Username:" + user.displayName + " - UID:" + userUID + " - email:" + user.email + "} has been added to the DB");
-                            res.render('main', { username: user.displayName, uid: user.uid });
+                            res.render('Main/main', {user: user});
                             return;
                         })
+
                         // IF USER CAN'T BE ADDED TO DB, REMOVING ACCOUNT FROM FIREBASE AUTHENTICATION
                         .catch(function(error) {
                             console.error("Error adding user: ", error);
                             var user = firebase.auth().currentUser;
                             if(user){
                                 console.error("USER LOGGED");
-                                user.delete().then(function() {
-                                    console.error("USER ACCOUNT DELETED");
-                                }).catch(function(error) {
-                                    console.error("Error deleting user account: ", error);
-                                });
+                                user.delete()
+                                .then(function() {console.error("USER ACCOUNT DELETED");})
+                                .catch(function(error) { console.error("Error deleting user account: ", error);});
                             }
                             console.log("REDIRECTION VERS /register a faire");
                         });
@@ -139,7 +132,6 @@ app.post('/register', async function(req, res) {
 });
 
 app.get('/login', function(req, res) {
-    var user = firebase.auth().currentUser;
     // retirer if else pour pouvoir connecter plusieurs utilisateur
         res.render('Login/login');
 });
@@ -205,11 +197,10 @@ io.on('connection', (socket) => {
         // Create userobj and add to users
         let userobj = new userObj(socket.id, user.uid, user.displayName);
         users.addUser(userobj);
-        console.log("User connected : " + users.getUser());
 
         // Send update list to front
         io.emit('updateUserConnected', users.getUsers());
-    
+
         // Remove the user from the list and send it to the front
         socket.on('NewLogout', (message) => {
             users.removeUser(userobj.getIdUser());

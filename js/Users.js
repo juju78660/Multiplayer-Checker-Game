@@ -6,6 +6,7 @@ class Users {
         this.users = [];
     }
 
+    // Verifier si deja present
     addUser(userObj) {
         this.users.push(userObj);
     }

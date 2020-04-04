@@ -43,18 +43,10 @@
     <body>
         <p><b>Hello {{ user.displayName }} (UID: {{ user.uid }} )</b></p>
 
-        <div id="UsersList"></div>
-        <ul id="listUser">
-            {% for user in connected_users %}
-              <li>{{ user }}</li>
-            {% else %}
-              <li>This would display if the 'item' collection were empty</li>
-            {% endfor %}
-        </ul>
+        <div id="users"></div>
 
         <div class="container-login100-form-btn m-t-32">
-            <button id="btn_logout" class="login100-form-btn">Logout</button>
-            <!-- <button id="btn_logout" onclick="window.location='/disconnect';" class="login100-form-btn">Logout</button> -->
+            <button id="btn_logout" onclick="window.location='/disconnect';" class="login100-form-btn">Logout</button>
         </div>
         <script src="main.js"></script>
 
