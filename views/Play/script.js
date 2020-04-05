@@ -37,10 +37,10 @@ function showMoves(color, valX, valY,king,piece) {
 	//Enregistrement des coordonnées de la pièces qu'on veut déplacer
 	selectedPieceX = valX;
 	selectedPieceY = valY;
-	console.log("in showMoves valX "+ valX + "valY " +valY);
+	console.log("in showMoves valX " + valX + "valY " + valY);
 
 	//Tout ce qui est en dessous ne fonctionne pas
-	if(block[valX][valY].pieceId.id === piece)
+	/*if(block[valY][valX].pieceId.id === piece)
 	{
 		selectedPiece = piece;
 		selectedPieceX = valX;
@@ -65,7 +65,7 @@ function showMoves(color, valX, valY,king,piece) {
 			console.log("black");
 		}
 	}
-
+*/
 
 }
 
@@ -88,11 +88,11 @@ var checker = function (piece, color, valX, valY) {
 
 //les square sont dans un tableau à une dimension allant de 1 à 100
 // Permet de récupérer l'indice du carré en fonction des coordonnées
-function returnSquareIndex(i,j) {
-	if(j === 1) return i;
-	if (j < 10) return (j-1)*10 + i;
-	if (j === 10 && i === 10) return 100;
-	return j*10 + i;
+function returnSquareIndex(x, y) {
+	if (y === 1) return x;
+	else if (y < 10) return (y - 1) * 10 + x;
+	else if (y === 10 && x === 10) return 100;
+	else return (y - 1) * 10 + x;
 
 }
 
@@ -110,18 +110,19 @@ function makeMove(indexX,indexY) {
 
 	//Changement de valeur du bloc où se trouvait la pièce avant le déplacement
 	block[selectedPieceY][selectedPieceX].ocupied = false;
-	let index_selected_square = returnSquareIndex(selectedPieceX,selectedPieceY);
+	let index_selected_square = returnSquareIndex(selectedPieceX, selectedPieceY);
 	let index = block[selectedPieceY][selectedPieceX].pieceId;
-	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square],indexX,indexY);
+	console.log(index + " l'index");
+	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square], selectedPieceX, selectedPieceY);
 
 	//block[1][3].id.style.background = "#41BA3E";
 
 	//Changement de valeur du bloc où se trouve actuellement la pièce déplacer
-	console.log(index+" l'index");
+
 	block[indexY][indexX].ocupied = true;
-	w_checker[index] = new checker(white_checker_class[index], "white",indexX,indexY);
+	w_checker[index] = new checker(white_checker_class[index], "white", indexX, indexY);
 	block[indexY][indexX].pieceId = index;
-	w_checker[index].setCoord(indexX,indexY);
+	w_checker[index].setCoord(indexX, indexY);
 	block[indexY][indexX].id = w_checker[index];
 
 	//affichage de débug
@@ -133,6 +134,8 @@ function makeMove(indexX,indexY) {
 	console.log(block[selectedPieceY][selectedPieceX].pieceId);
 	console.log(block[selectedPieceY][selectedPieceX].ocupied);
 	console.log(block[selectedPieceY][selectedPieceX].id);
+	selectedPieceY = 0;
+	selectedPieceX = 0;
 
 
 }
@@ -260,10 +263,28 @@ for (i = 11; i < 16; i++){
 	block[3][b_checker[i].coordX].pieceId = i;
 }
 
-for (i = 16; i < 21; i++){
-	b_checker[i] = new checker(black_checker_class[i], "black",2*i-31,4  );
-	b_checker[i].setCoord(2*i,4);
+for (i = 16; i < 21; i++) {
+	b_checker[i] = new checker(black_checker_class[i], "black", 2 * i - 31, 4);
+	b_checker[i].setCoord(2 * i, 4);
 	block[4][b_checker[i].coordX].id = b_checker[i];
 	block[4][b_checker[i].coordX].ocupied = true;
 	block[4][b_checker[i].coordX].pieceId = i;
 }
+
+/*
+for(i = 1 ; i <101; i++){
+	console.log(i);
+	console.log(square_class[i].indeX);
+}
+
+for (i = 1 ; i< 11 ; i++){
+	for (j=1 ; j<11; j++){
+		//console.log(block[i][j].pieceId);
+		//console.log(block[i][j].ocupied);
+		console.log(block[i][j].id);
+		console.log(returnSquareIndex(j,i));
+
+	}
+
+}
+*/
