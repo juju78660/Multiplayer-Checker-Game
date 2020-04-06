@@ -11,8 +11,13 @@ class Users {
         this.users.push(userObj);
     }
 
-    getUser(id) {
+    getUserById(id) {
         return this.users.filter((user) => user.getIdUser() === id)[0];
+    }
+
+
+    getUserBySocket(id) {
+        return this.users.filter((user) => user.getIdSocket() === id)[0];
     }
 
     /**
@@ -21,7 +26,7 @@ class Users {
      * @returns Users removed 
      */
     removeUser(idUser) {
-        let user = this.getUser(idUser);
+        let user = this.getUserById(idUser);
 
         if (user) {
             this.users = this.users.filter((user) => user.getIdUser() !== idUser);

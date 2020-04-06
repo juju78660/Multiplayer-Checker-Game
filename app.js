@@ -198,7 +198,7 @@ io.on('connection', (socket) => {
         let userobj = new userObj(socket.id, user.uid, user.displayName);
         users.addUser(userobj);
 
-        // Send update list to front
+        // Send update list to all user
         io.emit('updateUserConnected', users.getUsers());
 
         // Remove the user from the list and send it to the front
@@ -206,6 +206,19 @@ io.on('connection', (socket) => {
             users.removeUser(userobj.getIdUser());
             io.emit('updateUserConnected', users.getUsers());
         });
+
+        // Battle socket
+        socket.on('battle', (challengedSocketId) => {
+
+            let challenger = users.getUserBySocket(socket.id);
+            let challenged = users.getUserBySocket(challengedSocketId.challengedSocketId);
+            
+            console.log(challenged);
+            console.log(challenger);
+
+            // les emmener tous les 2 sur une page battle
+            const nsp = io.of('/my-namespace');
+        })
 
         // Remove the user from the list and send it to the front 
         socket.on('disconnect', () => {

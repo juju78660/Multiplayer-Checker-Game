@@ -15,10 +15,9 @@ socket.on('disconnect', function () {
 const logout = document.getElementById('btn_logout');
 logout.addEventListener('click', function () {socket.emit('NewLogout');});
 
-// socket which update list client
+// socket when new user connecte
 socket.on("updateUserConnected", function (users) {
 
-    // create order list
     let ol = document.createElement('ol');
 
     // for each user create elem with name and button
@@ -26,11 +25,17 @@ socket.on("updateUserConnected", function (users) {
         let li = document.createElement('li');
         let btn = document.createElement('button');
 
-        // match userid & button
-        btn.setAttribute("id", user.idUser);
         li.innerHTML = user.username;
         ol.appendChild(li);
+
+        // Add click battle event
         btn.innerHTML = "Battle";
+        btn.setAttribute("class", "login100-form-btn");
+        
+        btn.addEventListener('click', function () {
+            //envoyer le champs id de btns.item(i)
+            socket.emit('battle', { challengedSocketId: user.idSocket});
+        })
         ol.appendChild(btn);
     });
 
@@ -39,13 +44,3 @@ socket.on("updateUserConnected", function (users) {
     userList.innerHTML = "";
     userList.appendChild(ol);
 })
-
-// socket battle
-const btns = document.getElementsByTagName('button');
-btns.forEach(function(btn) {
-    btn.addEventListener('click', function () {
-        if (btn.getAttribute("id") != 'btn_logout') {
-            socket.emit('battle', {idChallenged: btn.getAttribute("id")});
-        };
-    });
-});
