@@ -34,6 +34,7 @@ var firebaseConfig = require('./firebase.js');
 firebase.initializeApp(firebaseConfig.getFirebaseConfig());
 
 /****** Routes *******/
+/*
 app.get('/', function(req, res){
     var user = firebase.auth().currentUser;
     if(!user){
@@ -42,6 +43,11 @@ app.get('/', function(req, res){
     else{
         res.redirect('/main');
     }
+});
+*/
+app.get('/', function(req, res) {
+    res.sendFile('play.html', { root: __dirname + "/views/Play" } );
+
 });
 
 /****** REGISTER *******/
