@@ -29,6 +29,8 @@ const b_checker = [];
 //let anotherMove;
 //const mustAttack = false;
 
+var boolCheckerSelected = false;
+
 
 /*================class declaration=========*/
 
@@ -37,7 +39,7 @@ function showMoves(color, valX, valY,king,piece) {
 	//Enregistrement des coordonnées de la pièces qu'on veut déplacer
 	selectedPieceX = valX;
 	selectedPieceY = valY;
-	console.log("in showMoves valX " + valX + "valY " + valY);
+	console.log("---------------------------------\n		SHOWMOVES");
 
 	//Tout ce qui est en dessous ne fonctionne pas
 	/*if(block[valY][valX].pieceId.id === piece)
@@ -82,6 +84,7 @@ var checker = function (piece, color, valX, valY) {
 
 	//Actif uniquement lorsqu'on appuie sur un pion
 	this.id.onclick = function  () {
+		boolCheckerSelected = true;
 		showMoves(color,valX,valY,this.king,piece);
 	}
 };
@@ -99,45 +102,47 @@ function returnSquareIndex(x, y) {
 //Fait le déplacement, faut d'abord sélectionner un pion (blanc pour l'instant)
 //Puis appuyer sur une case vide alors le pion se déplace
 function makeMove(indexX,indexY) {
+	let index = block[selectedPieceY][selectedPieceX].pieceId;
 	//affichage de débug
-	console.log(selectedPieceY +" selected (Y)/ index "+ indexY+" in makeMove");
-	console.log(selectedPieceX+ " selected X/ index "+ indexX +" in makeMoves");
-	console.log("va afficher le block avant modif  ");
-	console.log(block[selectedPieceY][selectedPieceX].pieceId);
-	console.log(block[selectedPieceY][selectedPieceX].ocupied);
-	console.log(block[selectedPieceY][selectedPieceX].id);
+	if(index<100) console.log("BLANC");
+	else console.log("NOIR");
+	console.log("Piece selectionnee: X:" + selectedPieceX + " Y:" + selectedPieceY);
+	console.log("Case destination: X:" + indexX + " Y:" + indexY);
+	console.log("Bloc départ avant modif: \n Piece id: " + index + "\n Occupe: " + block[selectedPieceY][selectedPieceX].ocupied + "\n ID: " + block[selectedPieceY][selectedPieceX].id);
 
 
 	//Changement de valeur du bloc où se trouvait la pièce avant le déplacement
 	block[selectedPieceY][selectedPieceX].ocupied = false;
 	let index_selected_square = returnSquareIndex(selectedPieceX, selectedPieceY);
-	let index = block[selectedPieceY][selectedPieceX].pieceId;
-	console.log(index + " l'index");
 	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square], selectedPieceX, selectedPieceY);
 
 	//block[1][3].id.style.background = "#41BA3E";
 
-	//Changement de valeur du bloc où se trouve actuellement la pièce déplacer
+	//Changement de valeur du bloc de destination en fonction de couleur pion
+	if(index < 100){
+		w_checker[index] = new checker(white_checker_class[index], "white", indexX, indexY);
+		w_checker[index].setCoord(indexX, indexY);
+		w_checker[index].checkIfKing();
+		block[indexY][indexX].id = w_checker[index];
+	}
+	else{
+		b_checker[index] = new checker(black_checker_class[index-100], "black", indexX, indexY);
+		b_checker[index].setCoord(indexX, indexY);
+		b_checker[index].checkIfKing();
+		block[indexY][indexX].id = b_checker[index];
+	}
 
+	//Changement de valeur du bloc de destination
 	block[indexY][indexX].ocupied = true;
-	w_checker[index] = new checker(white_checker_class[index], "white", indexX, indexY);
 	block[indexY][indexX].pieceId = index;
-	w_checker[index].setCoord(indexX, indexY);
-	block[indexY][indexX].id = w_checker[index];
 
 	//affichage de débug
-	console.log("va afficher le block d'arriver après modif ");
-	console.log(block[indexY][indexX].pieceId);
-	console.log(block[indexY][indexX].ocupied);
-	console.log(block[indexY][indexX].id);
-	console.log("va afficher le block de départ après modif  ");
-	console.log(block[selectedPieceY][selectedPieceX].pieceId);
-	console.log(block[selectedPieceY][selectedPieceX].ocupied);
-	console.log(block[selectedPieceY][selectedPieceX].id);
+	console.log("Bloc d'arrivee après modif: \n Piece id: " + block[indexY][indexX].pieceId + "\n Occupe: " + block[indexY][indexX].ocupied + "\n ID: " + block[indexY][indexX].id);
+	console.log("Block départ apres modif: \n Piece id: " + block[selectedPieceY][selectedPieceX].pieceId + "\n Occupe: " + block[selectedPieceY][selectedPieceX].ocupied + "\n ID: " + block[selectedPieceY][selectedPieceX].id);
+	console.log("		MAKEMOVE\n---------------------------------");
 	selectedPieceY = 0;
 	selectedPieceX = 0;
-
-
+	boolCheckerSelected = false;
 }
 //Classe de création des carrés
 //voir plus bas comment est utilisé
@@ -146,7 +151,8 @@ var square_p = function (square, indeX, indeY) {
 	this.ocupied = false;
 	this.pieceId = undefined;
 	this.id.onclick = function() {
-	 	makeMove(indeX,indeY);
+		if(boolCheckerSelected) makeMove(indeX,indeY);
+		else console.log("No checker selected before")
 	}
 };
 
@@ -161,15 +167,17 @@ checker.prototype.changeCoord = function(X,Y){
 	this.coordY +=Y;
 	this.coordX += X;
 };
-//non utilisé
+
 checker.prototype.checkIfKing = function () {
-	if(this.coordY === 8 && !this.king &&this.color === "white"){
+	if(this.coordY === 1 && !this.king && this.color === "white"){
 		this.king = true;
-		this.id.style.border = "4px solid #FFFF00";
+		this.id.style.border = "2px solid #000000"; // CHANGER STYLE TEMPORAIRE PAR IMAGE
+		console.log("checker modified to king");
 	}
-	if(this.coordY === 1 && !this.king &&this.color === "black"){
+	else if(this.coordY === 10 && !this.king && this.color === "black"){
 		this.king = true;
-		this.id.style.border = "4px solid #FFFF00";
+		this.id.style.border = "2px solid #FFFFFF"; // CHANGER STYLE TEMPORAIRE PAR IMAGE
+		console.log("checker modified to king");
 	}
 };
 //non utilisé
@@ -243,7 +251,7 @@ for (i = 1; i <6; i++){
 	b_checker[i].setCoord(2*i-1,1);
 	block[1][b_checker[i].coordX].id = b_checker[i];
 	block[1][b_checker[i].coordX].ocupied = true;
-	block[1][b_checker[i].coordX].pieceId =i;
+	block[1][b_checker[i].coordX].pieceId = i + 100;
 
 }
 
@@ -252,7 +260,7 @@ for (i = 6; i < 11; i++){
 	b_checker[i].setCoord(2*i,2);
 	block[2][b_checker[i].coordX].id = b_checker[i];
 	block[2][b_checker[i].coordX].ocupied = true;
-	block[2][b_checker[i].coordX].pieceId = i;
+	block[2][b_checker[i].coordX].pieceId = i + 100;
 }
 
 for (i = 11; i < 16; i++){
@@ -260,7 +268,7 @@ for (i = 11; i < 16; i++){
 	b_checker[i].setCoord(2*i-1,3);
 	block[3][b_checker[i].coordX].id = b_checker[i];
 	block[3][b_checker[i].coordX].ocupied = true;
-	block[3][b_checker[i].coordX].pieceId = i;
+	block[3][b_checker[i].coordX].pieceId = i + 100;
 }
 
 for (i = 16; i < 21; i++) {
@@ -268,7 +276,7 @@ for (i = 16; i < 21; i++) {
 	b_checker[i].setCoord(2 * i, 4);
 	block[4][b_checker[i].coordX].id = b_checker[i];
 	block[4][b_checker[i].coordX].ocupied = true;
-	block[4][b_checker[i].coordX].pieceId = i;
+	block[4][b_checker[i].coordX].pieceId = i + 100;
 }
 
 /*
