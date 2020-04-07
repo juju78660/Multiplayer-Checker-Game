@@ -1,4 +1,3 @@
-
 let socket = io();
 
 // socket connection cote client
@@ -30,17 +29,21 @@ socket.on("updateUserConnected", function (users) {
 
         // Add click battle event
         btn.innerHTML = "Battle";
-        btn.setAttribute("class", "login100-form-btn");
-        
+        btn.setAttribute("class", "btn btn-dark");
         btn.addEventListener('click', function () {
-            //envoyer le champs id de btns.item(i)
-            socket.emit('battle', { challengedSocketId: user.idSocket});
+            socket.emit('battle', { challengedSocketId: user.idSocket}, function () {
+                location.href = '/play.html';
+            });
         })
         ol.appendChild(btn);
     });
-
     // append to front div
     let userList = document.querySelector("#users");
     userList.innerHTML = "";
     userList.appendChild(ol);
 })
+
+// Redirect opponent to play
+socket.on("battlePage", function () {
+    location.href = '/play.html';
+});

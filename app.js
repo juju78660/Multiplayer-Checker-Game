@@ -18,7 +18,8 @@ app.use(express.static("views"));
 app.use(express.static("views/Home"));
 app.use(express.static("views/Login"));
 app.use(express.static("views/Register"));
-app.use(express.static("views/Main"))
+app.use(express.static("views/Main"));
+app.use(express.static("views/Play"));
 
 // ENGINE USE TO RENDER
 nunjucks.configure('views', {
@@ -178,6 +179,15 @@ app.get('/main', function(req, res) {
     }
 });
 
+app.get('/play', function(req, res) {
+    if(!firebase.auth().currentUser){
+        res.redirect('/login');
+    }
+    else{
+        res.sendFile('Play/play.html', { root: __dirname + "/views" } );
+    }
+});
+
 app.get('/disconnect', function(req, res) {
     if(firebase.auth().currentUser){
         firebase.auth().signOut();
@@ -208,16 +218,23 @@ io.on('connection', (socket) => {
         });
 
         // Battle socket
-        socket.on('battle', (challengedSocketId) => {
+        socket.on('battle', (res, callback) => {
 
             let challenger = users.getUserBySocket(socket.id);
-            let challenged = users.getUserBySocket(challengedSocketId.challengedSocketId);
-            
-            console.log(challenged);
-            console.log(challenger);
+            let challenged = users.getUserBySocket(res.challengedSocketId);
 
-            // les emmener tous les 2 sur une page battle
-            const nsp = io.of('/my-namespace');
+            // Verif available & send opponent in play.html
+            // may need a room later 
+            if (challenger.invite(challenged) == true) {
+
+                let room = challenger.username + challenged.username;
+                challenger.room = room;
+                challenged.room = room;
+
+                socket.broadcast.to(challenged.idSocket).emit('battlePage');
+                // send currrent user in play.html
+                callback();
+            }
         })
 
         // Remove the user from the list and send it to the front 

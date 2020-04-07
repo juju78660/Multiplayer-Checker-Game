@@ -9,7 +9,8 @@ class userObj {
         this.idSocket = idSocket;
         this.idUser = idUser;
         this.username = username;
-        //this.state = state;
+        this.available = true;
+        this.room = null;
     }
 
     getIdSocket() {
@@ -22,6 +23,18 @@ class userObj {
 
     getUsername() {
         return this.username;
+    }
+
+    invite(opponent) {
+        if (opponent == this){
+             return false;
+            }
+        if (this.available != true || opponent.available != true) {
+             return false;
+            }
+        this.available = false;
+        opponent.available = false;
+        return true;
     }
 
     //get state() {
