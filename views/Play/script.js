@@ -103,12 +103,12 @@ function returnSquareIndex(x, y) {
 //Puis appuyer sur une case vide alors le pion se déplace
 // LES PIONS NOIR DEMARRENT A L'INDICE 100 -> IL FAUT FAIRE checkerIndex-100 POUR ACCEDER A LA PIECE DANS LA TABLEAU DES PIONS
 function makeMove(indexX,indexY) {
-	var startBlock = block[selectedPieceY][selectedPieceX]; // BLOC DE DEPART
-	var destinationBlock = block[indexY][indexX];           // BLOC D'ARRIVEE
-    let checkerIndex = startBlock.pieceId;                  // INDEX DE LA PIECE D'ECHEC
+	let startBlock = block[selectedPieceY][selectedPieceX]; // BLOC DE DEPART
+	const destinationBlock = block[indexY][indexX];           // BLOC D'ARRIVEE
+	let checkerIndex = startBlock.pieceId;                  // INDEX DE LA PIECE D'ECHEC
 
 	//affichage de débug
-	if(checkerIndex<100) console.log("BLANC");
+	if (checkerIndex < 100) console.log("BLANC");
 	else console.log("NOIR");
 	console.log("Piece selectionnee: X:" + selectedPieceX + " Y:" + selectedPieceY);
 	console.log("Case destination: X:" + indexX + " Y:" + indexY);
@@ -118,27 +118,26 @@ function makeMove(indexX,indexY) {
 	//Changement de valeur du bloc où se trouvait la pièce avant le déplacement
 	startBlock.ocupied = false;
 	let index_selected_square = returnSquareIndex(selectedPieceX, selectedPieceY);
-	startBlock = new square_p(square_class[index_selected_square], selectedPieceX, selectedPieceY);
+	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square], selectedPieceX, selectedPieceY);
 
 	//block[1][3].id.style.background = "#41BA3E";
 
 	//Changement de valeur du bloc de destination en fonction de couleur pion
-	if(checkerIndex < 100){
+	if (checkerIndex < 100) {
 		w_checker[checkerIndex] = new checker(white_checker_class[checkerIndex], "white", indexX, indexY, w_checker[checkerIndex].king);
 		w_checker[checkerIndex].setCoord(indexX, indexY);
 		w_checker[checkerIndex].checkIfKing();
-        destinationBlock.id = w_checker[checkerIndex];
-	}
-	else{
-		b_checker[checkerIndex-100] = new checker(black_checker_class[checkerIndex-100], "black", indexX, indexY, b_checker[checkerIndex-100].king);
-		b_checker[checkerIndex-100].setCoord(indexX, indexY);
-		b_checker[checkerIndex-100].checkIfKing();
-        destinationBlock.id = b_checker[checkerIndex-100];
+		block[indexY][indexX].id = w_checker[checkerIndex];
+	} else {
+		b_checker[checkerIndex - 100] = new checker(black_checker_class[checkerIndex - 100], "black", indexX, indexY, b_checker[checkerIndex - 100].king);
+		b_checker[checkerIndex - 100].setCoord(indexX, indexY);
+		b_checker[checkerIndex - 100].checkIfKing();
+		block[indexY][indexX].id = b_checker[checkerIndex - 100];
 	}
 
 	//Changement de valeur du bloc de destination
-    destinationBlock.ocupied = true;
-    destinationBlock.pieceId = checkerIndex;
+	block[indexY][indexX].ocupied = true;
+	block[indexY][indexX].pieceId = checkerIndex;
 
 	//affichage de débug
 	console.log("Bloc d'arrivee après modif: \n Piece id: " + destinationBlock.pieceId + "\n Occupe: " + destinationBlock.ocupied + "\n ID: " + destinationBlock.id);
@@ -147,6 +146,7 @@ function makeMove(indexX,indexY) {
 	selectedPieceY = 0;
 	selectedPieceX = 0;
 	boolCheckerSelected = false;
+
 }
 //Classe de création des carrés
 //voir plus bas comment est utilisé
