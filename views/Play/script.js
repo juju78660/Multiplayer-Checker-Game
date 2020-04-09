@@ -29,45 +29,97 @@ const b_checker = [];
 //let anotherMove;
 //const mustAttack = false;
 
-var boolCheckerSelected = false;
+let boolCheckerSelected = false;
 
+function checkPosition(x, y) {
+	return x === 0 || x === 11 || y === 0 || y === 11;
+}
 
-/*================class declaration=========*/
+function colorieCase(valX, valY, couleur, bool) {
+	let x = valX;
+	let y = valY;
+	while (!(x === 1)) {
+		x--;
+		y--;
+		if (checkPosition(x, y) || block[y][x].ocupied) break;
+		block[y][x].id.style.background = couleur;
+		block[y][x].greySquare = bool;
+	}
+	x = valX;
+	y = valY;
+	while (true) {
+		x++;
+		y++;
+		if (checkPosition(x, y) || block[y][x].ocupied) break;
+		block[y][x].id.style.background = couleur;
+		block[y][x].greySquare = bool;
+	}
+	x = valX;
+	y = valY;
+	while (true) {
+		x--;
+		y++;
+		if (checkPosition(x, y) || block[y][x].ocupied) break;
+		block[y][x].id.style.background = couleur;
+		block[y][x].greySquare = bool;
+	}
+	x = valX;
+	y = valY;
+	while (true) {
+		x++;
+		y--;
+		if (checkPosition(x, y) || block[y][x].ocupied) break;
+		block[y][x].id.style.background = couleur;
+		block[y][x].greySquare = bool;
+	}
+}
+
+function checkAttack(valX, valY) {
+	let x = valX;
+	let y = valY;
+	while (true) {
+		x++;
+		y++;
+		if (checkPosition(x, y)) break;
+		if (block[y][x].ocupied && !block[y++][x++].ocupied) {
+			console.log("ici");
+			block[y][x].id.style.background = "#685f5b";
+			block[y][x].greySquare = true;
+			return true;
+
+		}
+	}
+	return false;
+}
 
 //actif uniqument lorsqu'on appuie sur un pion
-function showMoves(color, valX, valY,king,piece) {
+function showMoves(valX, valY) {
 	//Enregistrement des coordonnées de la pièces qu'on veut déplacer
 	selectedPieceX = valX;
 	selectedPieceY = valY;
 	console.log("---------------------------------\n		SHOWMOVES");
 
-	//Tout ce qui est en dessous ne fonctionne pas
-	/*if(block[valY][valX].pieceId.id === piece)
-	{
-		selectedPiece = piece;
-		selectedPieceX = valX;
-		selectedPieceY = valY;
-		console.log("yes");
+	if (block[selectedPieceY][selectedPieceX].id.king) { //est un roi
+		colorieCase(valX, valY, "#685f5b", true);
+	} else {//est un pion
+
+		//	if(checkAttack(valX,valY)){console.log("true");}
+		//
+		colorieCase(valX, valY, "#685f5b", true);
 
 	}
-	if(king === true){ //est une dames
 
-	}
-	else{ //un pion normal
- 		if(color === "white")
- 		{
-			if(valX === 10 && block[valX-1][valY-1].ocupied === false)
-			{
-				block[valY-1][valX-1].id.style.background = "#685f5b";
+	for (i = 1; i < 11; i++) {
 
-			}
- 		}
-		else
-		{
-			console.log("black");
+		for (i = 1; i < 10; i++) {
+			console.log(i);
+			console.log(block[j][i].id.style.background);
+			console.log(block[j][i].greySquare);
 		}
 	}
-*/
+
+
+
 
 }
 
@@ -85,7 +137,7 @@ var checker = function (piece, color, valX, valY, boolKing) {
 	//Actif uniquement lorsqu'on appuie sur un pion
 	this.id.onclick = function  () {
 		boolCheckerSelected = true;
-		showMoves(color,valX,valY,this.king,piece);
+		showMoves(valX, valY);
 	}
 };
 
@@ -103,6 +155,8 @@ function returnSquareIndex(x, y) {
 //Puis appuyer sur une case vide alors le pion se déplace
 // LES PIONS NOIR DEMARRENT A L'INDICE 100 -> IL FAUT FAIRE checkerIndex-100 POUR ACCEDER A LA PIECE DANS LA TABLEAU DES PIONS
 function makeMove(indexX,indexY) {
+
+	colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 	let startBlock = block[selectedPieceY][selectedPieceX]; // BLOC DE DEPART
 	const destinationBlock = block[indexY][indexX];           // BLOC D'ARRIVEE
 	let checkerIndex = startBlock.pieceId;                  // INDEX DE LA PIECE D'ECHEC
@@ -154,9 +208,14 @@ var square_p = function (square, indeX, indeY) {
 	this.id = square;
 	this.ocupied = false;
 	this.pieceId = undefined;
-	this.id.onclick = function() {
-		if(boolCheckerSelected) makeMove(indeX,indeY);
-		else console.log("No checker selected before")
+	this.greySquare = false;
+	this.id.onclick = function () {
+
+		if (boolCheckerSelected && block[indeY][indeX].greySquare) makeMove(indeX, indeY);
+		else {
+			console.log("No checker selected before");
+			colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+		}
 	}
 };
 
@@ -284,19 +343,23 @@ for (i = 16; i < 21; i++) {
 }
 
 /*
-for(i = 1 ; i <101; i++){
-	console.log(i);
-	console.log(square_class[i].indeX);
-}
-
 for (i = 1 ; i< 11 ; i++){
-	for (j=1 ; j<11; j++){
-		//console.log(block[i][j].pieceId);
-		//console.log(block[i][j].ocupied);
-		console.log(block[i][j].id);
-		console.log(returnSquareIndex(j,i));
 
+	for(i = 1 ; i <10; i++){
+		console.log(i);
+		console.log(block[6][i].id.style.background);
+		console.log(block[6][i].greySquare);
 	}
+    for (j=1 ; j<11; j++){
+
+        console.log(block[i][j].id);
+        console.log(block[i][j].id.style.background);
+        //console.log(returnSquareIndex(j,i));
+
+    }
 
 }
 */
+//console.log(square_class[i].indeX);
+//console.log(block[i][j].pieceId);
+//console.log(block[i][j].ocupied);
