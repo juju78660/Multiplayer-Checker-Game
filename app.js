@@ -8,12 +8,12 @@ var firebaseConfig = require('./js/firebase.js');
 const { userObj } = require('./js/userObj');
 const { Users } = require('./js/Users');
 
-
 // INITIALIZE THE APP
 const app = express();
 app.use(bodyP.json());
 app.use(bodyP.urlencoded({ extended: true }));
 
+// ADD STATIC FOLDERS AND FILES USED IN THE PROGRAM
 app.use(express.static("views"));
 app.use(express.static("views/Home"));
 app.use(express.static("views/Login"));
@@ -42,6 +42,9 @@ app.get('/', function(req, res){
     // Retirer if else pour pouvoir connecter plusieurs utilisateur
     res.sendFile('home.html', { root: __dirname + "/views/Home" } );
 });
+*/
+app.get('/', function(req, res) {
+    res.sendFile('play.html', { root: __dirname + "/views/Play" } );
 
 app.get('/register', function(req, res) {
     // Retirer if else pour pouvoir connecter plusieurs utilisateur
@@ -49,7 +52,7 @@ app.get('/register', function(req, res) {
 });
 
 app.post('/register', async function(req, res) {
-    var x = new Boolean("false");
+    var firstStateChange = true;
     var db = firebase.firestore();
 
     var username = req.body.username;
@@ -58,7 +61,8 @@ app.post('/register', async function(req, res) {
     var repassword = req.body.re_password;
 
     // DECONNECTE L'UTILISATEUR POSSIBLEMENT DEJA CONNECTE
-    firebase.auth().signOut();
+    if(firebase.auth().currentUser) firebase.auth().signOut();
+
 
     if(password == repassword)
     {
@@ -111,17 +115,25 @@ app.post('/register', async function(req, res) {
                                 .then(function() {console.error("USER ACCOUNT DELETED");})
                                 .catch(function(error) { console.error("Error deleting user account: ", error);});
                             }
-                            console.log("REDIRECTION VERS /register a faire");
                         });
-                }).catch(function(error) {
-                    console.error("Error setting username: ", error);
-                });
+                    })
+                        .catch(function(error)
+                        {
+                            var errorCode = error.code;
+                            var errorMessage = error.message;
+                            console.log(errorCode + ":" + errorMessage);
 
-            }
-        });
-
+                            res.render('Register/register', {error_message: errorMessage,
+                                username: username,
+                                email: email,
+                                password: password,
+                                re_password: repassword
+                            });
+                        });
+                }
+            });
     }
-    else
+    else        // IF PASSWORD AND PASSWORD CONFIRMATION ARE NOT ==
     {
         res.render('Register/register', {error_message: 'Passwords do not match !',
             username: req.body.username,
@@ -132,46 +144,82 @@ app.post('/register', async function(req, res) {
     }
 });
 
+/****** LOGIN *******/
 app.get('/login', function(req, res) {
     // retirer if else pour pouvoir connecter plusieurs utilisateur
         res.render('Login/login');
 });
 
 app.post('/login', async function(req, res) {
-    var x = true;
+    var firstStateChange = true;
     try {
         var email = req.body.email;
         var password = req.body.password;
 
         firebase.auth().signInWithEmailAndPassword(email, password).then(function(firebaseUser) {
             firebase.auth().onAuthStateChanged(function(user) {
-                if (user && x) {
-                    x = false;
+                if (user && firstStateChange) {
+                    firstStateChange = false;
                     res.render('Main/main', {  user: user });
                 }
             });
         })
-        .catch(function(error) {
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            console.log(errorCode + ":" + errorMessage);
+            .catch(function(error) {
+                var errorCode = error.code;
+                var errorMessage = error.message;
+                console.log(errorCode + ":" + errorMessage);
 
-            res.render('Login/login', {error_message: errorMessage,
-                email: req.body.email,
-                password: req.body.password});
-        });
+                res.render('Login/login', {error_message: errorMessage,
+                    email: req.body.email,
+                    password: req.body.password});
+            });
     }
     catch(error) {
         console.error("Login error:" + error);
     }
 });
 
+/****** FORGET PASSWORD *******/
 app.get('/forgetPassword', function(req, res) {
-  res.sendFile('forgetPassword.html', { root: __dirname + "/views/Login" } );
+    var user = firebase.auth().currentUser;
+    if(!user){
+        res.render('Login/forgetPassword');
+    }
+    else{
+        res.redirect("/main");
+    }
 });
 
+app.post('/forgetPassword', async function(req, res) {
+    try {
+        var auth = firebase.auth();
+        var email = req.body.email;
+
+        auth.sendPasswordResetEmail(email).then(function()
+        {
+            res.render('Login/forgetPassword', {result_message: "The instructions to reset your password has been sent to you"});
+        })
+            .catch(function(error)
+            {
+                var errorCode = error.code;
+                var errorMessage = error.message;
+
+                console.log(errorCode + ":" + errorMessage);
+                res.render('Login/forgetPassword', {result_message: errorMessage});
+            });
+    }
+    catch(error) {
+        console.error("Reset password error:" + error);
+    }
+});
+
+
+
+
+/****** MAIN *******/
 app.get('/main', function(req, res) {
-    if(!firebase.auth().currentUser){
+    var user = firebase.auth().currentUser;
+    if(!user){
         res.redirect('/login');
     }
     else{
@@ -188,6 +236,7 @@ app.get('/play', function(req, res) {
     }
 });
 
+/****** DISCONNECT *******/
 app.get('/disconnect', function(req, res) {
     if(firebase.auth().currentUser){
         firebase.auth().signOut();
@@ -201,7 +250,7 @@ let users = new Users();
 io.on('connection', (socket) => {
 
     user = firebase.auth().currentUser;
-    
+
     if (user) {
 
         // Create userobj and add to users
@@ -224,7 +273,7 @@ io.on('connection', (socket) => {
             let challenged = users.getUserBySocket(res.challengedSocketId);
 
             // Verif available & send opponent in play.html
-            // may need a room later 
+            // may need a room later
             if (challenger.invite(challenged) == true) {
 
                 let room = challenger.username + challenged.username;
@@ -237,7 +286,7 @@ io.on('connection', (socket) => {
             }
         })
 
-        // Remove the user from the list and send it to the front 
+        // Remove the user from the list and send it to the front
         socket.on('disconnect', () => {
             users.removeUser(userobj.getIdUser());
             io.emit('updateUserConnected', users.getUsers());
