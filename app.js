@@ -42,9 +42,6 @@ app.get('/', function(req, res){
     // Retirer if else pour pouvoir connecter plusieurs utilisateur
     res.sendFile('home.html', { root: __dirname + "/views/Home" } );
 });
-*/
-app.get('/', function(req, res) {
-    res.sendFile('play.html', { root: __dirname + "/views/Play" } );
 
 app.get('/register', function(req, res) {
     // Retirer if else pour pouvoir connecter plusieurs utilisateur
