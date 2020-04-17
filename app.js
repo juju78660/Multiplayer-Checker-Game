@@ -278,20 +278,24 @@ io.on('connection', (socket) => {
                 challenged.room = "bonjour";
 
                 //verif comment chopper les 2 dans chanque objet
-                console.log(users);
                 io.emit('updateUserConnected', users.getUsers());
 
                 socket.broadcast.to(challenged.idSocket).emit('battlePage');
                 // send currrent user in play.html
                 callback();
             }
-            console.log(users);
         })
 
         socket.on('add', () => {
-          //console.log(users);
+          console.log(users);
           socket.broadcast.emit("updateNb");
-        })
+        });
+
+        socket.on('UpdateBoard', (res) => {
+          console.log(res);
+          io.emit('UpdateAdversaireBoard', res);
+        });
+
 
         // Remove the user from the list and send it to the front
         socket.on('disconnect', () => {

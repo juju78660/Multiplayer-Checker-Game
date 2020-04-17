@@ -8,6 +8,48 @@
 
 
  */
+let socket = io();
+
+// socket connection cote client
+socket.on('connect', function () {
+		console.log("connected client side");
+		console.log(socket.id);
+
+		// socket when new user connecte
+		socket.on("updateUserConnected", function (users) {
+			console.log(users);
+		});
+
+		socket.on("UpdateAdversaireBoard", (res) => {
+			console.log(res);
+			block[res.start_cordy][res.start_cordx] = new square_p(square_class[returnSquareIndex(res.start_cordx, res.start_cordy)], res.start_cordx, res.start_cordy);
+
+			if (res.piece_id < 100) {
+				w_checker[res.piece_id] = new checker(white_checker_class[res.piece_id], "white", res.dest_x, res.dest_y, w_checker[res.piece_id].king);
+				w_checker[res.piece_id].setCoord(res.dest_x, res.dest_y);
+				w_checker[res.piece_id].checkIfKing();
+				block[res.dest_y][res.dest_x].id = w_checker[res.piece_id];
+
+			}
+			else {
+				b_checker[res.piece_id - 100] = new checker(black_checker_class[res.piece_id - 100], "black", res.dest_x, res.dest_y, b_checker[res.piece_id - 100].king);
+				b_checker[res.piece_id - 100].setCoord(res.dest_x, res.dest_y);
+				b_checker[res.piece_id - 100].checkIfKing();
+				block[res.dest_y][res.dest_x].id = b_checker[res.piece_id - 100];
+
+			}
+
+			//Changement de valeur du bloc de destination
+			block[res.dest_y][res.dest_x].ocupied = true;
+			block[res.dest_y][res.dest_x].pieceId = res.piece_id;
+
+		});
+});
+
+// socket deconnection cote client
+socket.on('disconnect', function () {
+		console.log("disconected client side");
+		});
 
 
 const square_class = document.getElementsByClassName("square");
@@ -172,6 +214,17 @@ function makeMove(indexX,indexY) {
 	//Changement de valeur du bloc où se trouvait la pièce avant le déplacement
 	startBlock.ocupied = false;
 	let index_selected_square = returnSquareIndex(selectedPieceX, selectedPieceY);
+
+	// update adversaire board
+	socket.emit('UpdateBoard', {
+		start_cordx: selectedPieceX,
+		start_cordy: selectedPieceY,
+		dest_x: indexX,
+		dest_y: indexY,
+		piece_id: block[selectedPieceY][selectedPieceX].pieceId
+	});
+
+	console.log(block[selectedPieceY][selectedPieceX]);
 	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square], selectedPieceX, selectedPieceY);
 
 	//block[1][3].id.style.background = "#41BA3E";
@@ -182,11 +235,14 @@ function makeMove(indexX,indexY) {
 		w_checker[checkerIndex].setCoord(indexX, indexY);
 		w_checker[checkerIndex].checkIfKing();
 		block[indexY][indexX].id = w_checker[checkerIndex];
-	} else {
+
+	}
+	else {
 		b_checker[checkerIndex - 100] = new checker(black_checker_class[checkerIndex - 100], "black", indexX, indexY, b_checker[checkerIndex - 100].king);
 		b_checker[checkerIndex - 100].setCoord(indexX, indexY);
 		b_checker[checkerIndex - 100].checkIfKing();
 		block[indexY][indexX].id = b_checker[checkerIndex - 100];
+
 	}
 
 	//Changement de valeur du bloc de destination
@@ -197,6 +253,8 @@ function makeMove(indexX,indexY) {
 	console.log("Bloc d'arrivee après modif: \n Piece id: " + destinationBlock.pieceId + "\n Occupe: " + destinationBlock.ocupied + "\n ID: " + destinationBlock.id);
 	console.log("Block départ apres modif: \n Piece id: " + startBlock.pieceId + "\n Occupe: " + startBlock.ocupied + "\n ID: " + startBlock.id);
 	console.log("		MAKEMOVE\n---------------------------------");
+
+
 	selectedPieceY = 0;
 	selectedPieceX = 0;
 	boolCheckerSelected = false;
@@ -341,6 +399,7 @@ for (i = 16; i < 21; i++) {
 	block[4][b_checker[i].coordX].ocupied = true;
 	block[4][b_checker[i].coordX].pieceId = i + 100;
 }
+
 
 /*
 for (i = 1 ; i< 11 ; i++){
