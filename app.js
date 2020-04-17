@@ -273,14 +273,24 @@ io.on('connection', (socket) => {
             // may need a room later
             if (challenger.invite(challenged) == true) {
 
-                let room = challenger.username + challenged.username;
-                challenger.room = room;
-                challenged.room = room;
+                let room = challenger + challenged;
+                challenger.room = "bonjour";
+                challenged.room = "bonjour";
+
+                //verif comment chopper les 2 dans chanque objet
+                console.log(users);
+                io.emit('updateUserConnected', users.getUsers());
 
                 socket.broadcast.to(challenged.idSocket).emit('battlePage');
                 // send currrent user in play.html
                 callback();
             }
+            console.log(users);
+        })
+
+        socket.on('add', () => {
+          //console.log(users);
+          socket.broadcast.emit("updateNb");
         })
 
         // Remove the user from the list and send it to the front
