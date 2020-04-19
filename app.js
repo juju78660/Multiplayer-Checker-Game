@@ -252,10 +252,12 @@ io.on('connection', (socket) => {
 
         // Create userobj and add to users
         let userobj = new userObj(socket.id, user.uid, user.displayName);
-        users.addUser(userobj);
 
-        // Send update list to all user
-        io.emit('updateUserConnected', users.getUsers());
+        // if not already in the list add him & send the update list
+        if (!users.getUserById(userobj.idUser)) {
+            users.addUser(userobj);
+            io.emit('updateUserConnected', users.getUsers());
+        }
 
         // Remove the user from the list and send it to the front
         socket.on('NewLogout', (message) => {
@@ -263,44 +265,44 @@ io.on('connection', (socket) => {
             io.emit('updateUserConnected', users.getUsers());
         });
 
+        // Remove the user from the list and send it to the front
+        socket.on('disconnect', () => {
+          // if not in battle remove him
+          if ((users.getUserById(userobj.idUser)).available == true) {
+              users.removeUser(userobj.getIdUser());
+              io.emit('updateUserConnected', users.getUsers());
+          }
+        });
         // Battle socket
         socket.on('battle', (res, callback) => {
 
-            let challenger = users.getUserBySocket(socket.id);
-            let challenged = users.getUserBySocket(res.challengedSocketId);
+          let challenger = users.getUserBySocket(socket.id);
+          let challenged = users.getUserBySocket(res.challengedSocketId);
 
-            // Verif available & send opponent in play.html
-            // may need a room later
-            if (challenger.invite(challenged) == true) {
+          // Verif available & send both in play.html
+          if (challenger.invite(challenged) == true) {
 
-                let room = challenger + challenged;
-                challenger.room = "bonjour";
-                challenged.room = "bonjour";
+            // save the opponent socket
+            challenger.socketOpponent = challenged.idSocket;
+            challenged.socketOpponent = challenger.idSocket;
 
-                //verif comment chopper les 2 dans chanque objet
-                io.emit('updateUserConnected', users.getUsers());
+            socket.broadcast.to(challenged.idSocket).emit('battlePage');
+            io.emit('updateUserConnected', users.getUsers());
 
-                socket.broadcast.to(challenged.idSocket).emit('battlePage');
-                // send currrent user in play.html
-                callback();
-            }
+            // Wait until they are on play.html
+            setTimeout( () => {
+              io.emit('UpdateBattle', users);
+              console.log("ralentie");
+            }, 5000);
+
+            // send currrent user in play.html
+            callback();
+          }
         })
 
-        socket.on('add', () => {
-          console.log(users);
-          socket.broadcast.emit("updateNb");
-        });
-
+        // update the adversaire board
         socket.on('UpdateBoard', (res) => {
-          console.log(res);
           io.emit('UpdateAdversaireBoard', res);
-        });
-
-
-        // Remove the user from the list and send it to the front
-        socket.on('disconnect', () => {
-            users.removeUser(userobj.getIdUser());
-            io.emit('updateUserConnected', users.getUsers());
         });
     }
 });
