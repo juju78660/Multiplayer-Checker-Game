@@ -18,7 +18,8 @@ logout.addEventListener('click', function () {socket.emit('NewLogout');});
 socket.on("updateUserConnected", function (users) {
 
     let ol = document.createElement('ol');
-
+    console.log(users);
+    
     // for each user create elem with name and button
     users.forEach(function (user) {
         let li = document.createElement('li');

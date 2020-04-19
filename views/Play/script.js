@@ -5,52 +5,7 @@
 		_ l'axe des ordonnées est : y ou j
 		bloc[1][2] va avoir pour coordonnée x = 2 , y = 1
 		donc c'est pour accéder à un champs  bloc[y][x]
-
-
  */
-let socket = io();
-
-// socket connection cote client
-socket.on('connect', function () {
-		console.log("connected client side");
-		console.log(socket.id);
-
-		// socket when new user connecte
-		socket.on("updateUserConnected", function (users) {
-			console.log(users);
-		});
-
-		socket.on("UpdateAdversaireBoard", (res) => {
-			console.log(res);
-			block[res.start_cordy][res.start_cordx] = new square_p(square_class[returnSquareIndex(res.start_cordx, res.start_cordy)], res.start_cordx, res.start_cordy);
-
-			if (res.piece_id < 100) {
-				w_checker[res.piece_id] = new checker(white_checker_class[res.piece_id], "white", res.dest_x, res.dest_y, w_checker[res.piece_id].king);
-				w_checker[res.piece_id].setCoord(res.dest_x, res.dest_y);
-				w_checker[res.piece_id].checkIfKing();
-				block[res.dest_y][res.dest_x].id = w_checker[res.piece_id];
-
-			}
-			else {
-				b_checker[res.piece_id - 100] = new checker(black_checker_class[res.piece_id - 100], "black", res.dest_x, res.dest_y, b_checker[res.piece_id - 100].king);
-				b_checker[res.piece_id - 100].setCoord(res.dest_x, res.dest_y);
-				b_checker[res.piece_id - 100].checkIfKing();
-				block[res.dest_y][res.dest_x].id = b_checker[res.piece_id - 100];
-
-			}
-
-			//Changement de valeur du bloc de destination
-			block[res.dest_y][res.dest_x].ocupied = true;
-			block[res.dest_y][res.dest_x].pieceId = res.piece_id;
-
-		});
-});
-
-// socket deconnection cote client
-socket.on('disconnect', function () {
-		console.log("disconected client side");
-		});
-
 
 const square_class = document.getElementsByClassName("square");
 const white_checker_class = document.getElementsByClassName("white_checker");
@@ -155,7 +110,6 @@ function showMoves(valX, valY) {
 
 		for (i = 1; i < 10; i++) {
 			console.log(i);
-			console.log(block[j][i].id.style.background);
 			console.log(block[j][i].greySquare);
 		}
 	}

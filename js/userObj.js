@@ -10,7 +10,7 @@ class userObj {
         this.idUser = idUser;
         this.username = username;
         this.available = true;
-        this.room = null;
+        this.socketOpponent = null;
     }
 
     getIdSocket() {
