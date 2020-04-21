@@ -243,19 +243,16 @@ app.get('/disconnect', function(req, res) {
     res.redirect('/');
 });
 
-
 let users = new Users();
+let opponent = false
 
 // the server listen for a connection
 io.on('connection', (socket) => {
 
-    console.log("connected server side");
     user = firebase.auth().currentUser;
 
     if (user) {
 
-        console.log(user.uid);
-        console.log(user.displayName);
         // Create userobj and add to users
         let userobj = new userObj(socket.id, user.uid, user.displayName);
 
@@ -265,14 +262,16 @@ io.on('connection', (socket) => {
             io.emit('updateUserConnected', users.getUsers());
             console.log(users);
         }
-        // else change socket id
+        // else change his socket id & then his opponent socket id
         else {
-          // il remplace 2 fois au meme endroit
-          console.log(user.uid);
-          console.log("change socket id : " + socket.id);
-          users.getUserById(userobj.idUser).idSocket = socket.id;
-          console.log("#Apres :");
-          console.log(users);
+          if (!opponent) {
+            users.getUserById(userobj.idUser).idSocket = socket.id;
+            opponent = true;
+          }
+          else {
+            users.getUserBySocket((users.getUserById(userobj.idUser)).socketOpponent).idSocket = socket.id;
+            opponent = false;
+          }
           io.emit('updateUserConnected', users.getUsers());
         }
 
@@ -307,9 +306,9 @@ io.on('connection', (socket) => {
             challenger.white = false;
 
             // challenged take white
-            challenger.socketOpponent = challenger.idSocket;
-            challenger.white = true;
-            challenger.turn = true;
+            challenged.socketOpponent = challenger.idSocket;
+            challenged.white = true;
+            challenged.turn = true;
 
             // Send both in play & update list
             io.to(challenger.idSocket).emit('battlePage');
@@ -331,10 +330,7 @@ io.on('connection', (socket) => {
 
         socket.on('who', (res, callback) => {
           console.log("#Who");
-          console.log(users);
-          console.log(socket.id);
-          console.log(users.getUserBySocket(socket.id));
-        })
+        });
 
         // update the adversaire board
         socket.on('UpdateBoard', (res) => {
