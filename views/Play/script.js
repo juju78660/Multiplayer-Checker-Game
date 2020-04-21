@@ -8,8 +8,6 @@
 
 
  */
-
-
 const square_class = document.getElementsByClassName("square");
 const white_checker_class = document.getElementsByClassName("white_checker");
 const black_checker_class = document.getElementsByClassName("black_checker");
@@ -30,6 +28,34 @@ const b_checker = [];
 //const mustAttack = false;
 
 let boolCheckerSelected = false;
+
+
+function Point(x, y) {
+	this.x = x;
+	this.y = y;
+}
+
+function equalsPoint(Point1, Point2) {
+	return Point1.x === Point2.x && Point1.y === Point2.y;
+}
+
+
+function Node(data) {
+	this.data = data;
+	this.parent = null;
+	this.children = [];
+}
+
+function Tree(data) {
+	this._root = new Node(data);
+}
+
+
+Tree.prototype.add = function (data) {
+	var child = new Node(data);
+	this.push(child);
+	child.parent = this;
+};
 
 function checkPosition(x, y) {
 	return x === 0 || x === 11 || y === 0 || y === 11;
@@ -74,23 +100,32 @@ function colorieCase(valX, valY, couleur, bool) {
 	}
 }
 
-function checkAttack(valX, valY) {
-	let x = valX;
-	let y = valY;
-	while (true) {
-		x++;
-		y++;
-		if (checkPosition(x, y)) break;
-		if (block[y][x].ocupied && !block[y++][x++].ocupied) {
-			console.log("ici");
-			block[y][x].id.style.background = "#685f5b";
-			block[y][x].greySquare = true;
-			return true;
+function checkEnnemi(x, y) {
+	if (block[y][x].ocupied) {
+		return block[y][x].id.color !== block[selectedPieceY][selectedPieceX].id.color;
 
-		}
 	}
 	return false;
 }
+
+function attackPath(valX, valY, tree) {
+	if (checkPosition(valX, valY)) return null;
+	if (checkEnnemi(valX, valY)) {
+		if (selectedPieceX > valX && selectedPieceY > valY) {
+			//pion ennemi en diagonale haut gauche
+
+		} else if (selectedPieceX < valX && selectedPieceY > valY) {
+			//pion ennemi en diagonale haut droite
+		} else if (selectedPieceX < valX && selectedPieceY < valY) {
+			//pion ennemi en bas droite
+		} else if (selectedPieceX > valX && selectedPieceY < valY) {
+			//pion ennemu bas gauche
+		}
+
+	}
+
+}
+
 
 //actif uniqument lorsqu'on appuie sur un pion
 function showMoves(valX, valY) {
@@ -102,23 +137,10 @@ function showMoves(valX, valY) {
 	if (block[selectedPieceY][selectedPieceX].id.king) { //est un roi
 		colorieCase(valX, valY, "#685f5b", true);
 	} else {//est un pion
-
-		//	if(checkAttack(valX,valY)){console.log("true");}
-		//
 		colorieCase(valX, valY, "#685f5b", true);
 
+
 	}
-
-	for (i = 1; i < 11; i++) {
-
-		for (i = 1; i < 10; i++) {
-			console.log(i);
-			console.log(block[j][i].id.style.background);
-			console.log(block[j][i].greySquare);
-		}
-	}
-
-
 
 
 }
@@ -155,7 +177,7 @@ function returnSquareIndex(x, y) {
 //Puis appuyer sur une case vide alors le pion se déplace
 // LES PIONS NOIR DEMARRENT A L'INDICE 100 -> IL FAUT FAIRE checkerIndex-100 POUR ACCEDER A LA PIECE DANS LA TABLEAU DES PIONS
 function makeMove(indexX,indexY) {
-
+	console.log(block[indexY][indexX].id);
 	colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 	let startBlock = block[selectedPieceY][selectedPieceX]; // BLOC DE DEPART
 	const destinationBlock = block[indexY][indexX];           // BLOC D'ARRIVEE
@@ -210,9 +232,10 @@ var square_p = function (square, indeX, indeY) {
 	this.pieceId = undefined;
 	this.greySquare = false;
 	this.id.onclick = function () {
+		if (boolCheckerSelected && block[indeY][indeX].greySquare) {
 
-		if (boolCheckerSelected && block[indeY][indeX].greySquare) makeMove(indeX, indeY);
-		else {
+			makeMove(indeX, indeY);
+		} else {
 			console.log("No checker selected before");
 			colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 		}
@@ -345,15 +368,9 @@ for (i = 16; i < 21; i++) {
 /*
 for (i = 1 ; i< 11 ; i++){
 
-	for(i = 1 ; i <10; i++){
-		console.log(i);
-		console.log(block[6][i].id.style.background);
-		console.log(block[6][i].greySquare);
-	}
     for (j=1 ; j<11; j++){
 
         console.log(block[i][j].id);
-        console.log(block[i][j].id.style.background);
         //console.log(returnSquareIndex(j,i));
 
     }
