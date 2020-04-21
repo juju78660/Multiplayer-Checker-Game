@@ -99,32 +99,31 @@ function showMoves(valX, valY) {
 	/**
 		METTRE LE IF BLANC IF NOIR ET IF TOUR
 	**/
-	socket.emit('who', {
-		challenger: challenger,
-		challenged: challenged
-	});
-
 
 	selectedPieceX = valX;
 	selectedPieceY = valY;
-	console.log("---------------------------------\n		SHOWMOVES");
 
-	if (block[selectedPieceY][selectedPieceX].id.king) { //est un roi
-		colorieCase(valX, valY, "#685f5b", true);
-	} else {//est un pion
+	// Verifie si bonne couleur & mon tour
+	if (me.color == block[selectedPieceY][selectedPieceX].id.color && me.turn == true) {
+		console.log("---------------------------------\n		SHOWMOVES");
 
-		//	if(checkAttack(valX,valY)){console.log("true");}
-		//
-		colorieCase(valX, valY, "#685f5b", true);
+		if (block[selectedPieceY][selectedPieceX].id.king) { //est un roi
+			colorieCase(valX, valY, "#685f5b", true);
+		} else {//est un pion
 
-	}
-
-	for (i = 1; i < 11; i++) {
-
-		for (i = 1; i < 10; i++) {
-			console.log(i);
-			console.log(block[j][i].greySquare);
+			//	if(checkAttack(valX,valY)){console.log("true");}
+			//
+			colorieCase(valX, valY, "#685f5b", true);
 		}
+
+		for (i = 1; i < 11; i++) {
+
+			for (i = 1; i < 10; i++) {
+				console.log(i);
+				console.log(block[j][i].greySquare);
+			}
+		}
+
 	}
 
 }
@@ -192,6 +191,12 @@ function makeMove(indexX,indexY) {
 		dest_x: indexX,
 		dest_y: indexY,
 		piece_id: block[selectedPieceY][selectedPieceX].pieceId
+	});
+
+	// Pass my turn & opponent turn
+	socket.emit('PassTurn', {
+		me: me,
+		opponent: opponent
 	});
 
 	console.log(block[selectedPieceY][selectedPieceX]);

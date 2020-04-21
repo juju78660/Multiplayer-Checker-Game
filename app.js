@@ -271,7 +271,6 @@ io.on('connection', (socket) => {
             users.getUserBySocket((users.getUserById(userobj.idUser)).socketOpponent).idSocket = socket.id;
             opponent = false;
           }
-          io.emit('updateUserConnected', users.getUsers());
         }
 
         // Remove the user from the list and send it to the front
@@ -302,17 +301,16 @@ io.on('connection', (socket) => {
 
             // challenger take black
             challenger.socketOpponent = challenged.idSocket;
-            challenger.white = false;
+            challenger.color = "black";
 
             // challenged take white
             challenged.socketOpponent = challenger.idSocket;
-            challenged.white = true;
+            challenged.color = "white";
             challenged.turn = true;
 
             // Send both in play & update list
             io.to(challenger.idSocket).emit('battlePage');
             io.to(challenged.idSocket).emit('battlePage');
-            io.emit('updateUserConnected', users.getUsers());
 
             // Wait until they are on play.html
             setTimeout( () => {
@@ -327,8 +325,14 @@ io.on('connection', (socket) => {
           }
         });
 
-        socket.on('who', (res, callback) => {
-          console.log("#Who");
+        // Pass my turn & opponent turn
+        socket.on('PassTurn', (res) => {
+          res.me.turn = false;
+          res.opponent.turn = true;
+          io.emit('UpdateBattle', {
+            challenger: res.me,
+            challenged: res.opponent
+          });
         });
 
         // update the adversaire board
