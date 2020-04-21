@@ -5,10 +5,7 @@
 		_ l'axe des ordonnées est : y ou j
 		bloc[1][2] va avoir pour coordonnée x = 2 , y = 1
 		donc c'est pour accéder à un champs  bloc[y][x]
-
-
  */
-
 
 const square_class = document.getElementsByClassName("square");
 const white_checker_class = document.getElementsByClassName("white_checker");
@@ -29,45 +26,96 @@ const b_checker = [];
 //let anotherMove;
 //const mustAttack = false;
 
-var boolCheckerSelected = false;
+let boolCheckerSelected = false; 		// SI UNE PIECE EST SELECTIONNEE
+// COORDONNEE DE LA PIECE SELECTIONNEE -> SI UNE AUTRE PIECE EST DEJA SELECTIONNEE, ON DECOLORIE CETTE ANCIENNE PIECE AVEC SES COORDONNEES
+let coordX_selected_checker;
+let coordY_selected_checker;
 
+function checkPosition(x, y) {
+	return x === 0 || x === 11 || y === 0 || y === 11;
+}
 
-/*================class declaration=========*/
+function colorieCase(valX, valY, couleur, bool) {
+	let x = valX;
+	let y = valY;
+	while (!(x === 1)) {
+		x--;
+		y--;
+		if (checkPosition(x, y) || block[y][x].ocupied) break;
+		block[y][x].id.style.background = couleur;
+		block[y][x].greySquare = bool;
+	}
+	x = valX;
+	y = valY;
+	while (true) {
+		x++;
+		y++;
+		if (checkPosition(x, y) || block[y][x].ocupied) break;
+		block[y][x].id.style.background = couleur;
+		block[y][x].greySquare = bool;
+	}
+	x = valX;
+	y = valY;
+	while (true) {
+		x--;
+		y++;
+		if (checkPosition(x, y) || block[y][x].ocupied) break;
+		block[y][x].id.style.background = couleur;
+		block[y][x].greySquare = bool;
+	}
+	x = valX;
+	y = valY;
+	while (true) {
+		x++;
+		y--;
+		if (checkPosition(x, y) || block[y][x].ocupied) break;
+		block[y][x].id.style.background = couleur;
+		block[y][x].greySquare = bool;
+	}
+}
+
+function checkAttack(valX, valY) {
+	let x = valX;
+	let y = valY;
+	while (true) {
+		x++;
+		y++;
+		if (checkPosition(x, y)) break;
+		if (block[y][x].ocupied && !block[y++][x++].ocupied) {
+			console.log("ici");
+			block[y][x].id.style.background = "#685f5b";
+			block[y][x].greySquare = true;
+			return true;
+
+		}
+	}
+	return false;
+}
 
 //actif uniqument lorsqu'on appuie sur un pion
-function showMoves(color, valX, valY,king,piece) {
+function showMoves(valX, valY) {
 	//Enregistrement des coordonnées de la pièces qu'on veut déplacer
 	selectedPieceX = valX;
 	selectedPieceY = valY;
 	console.log("---------------------------------\n		SHOWMOVES");
 
-	//Tout ce qui est en dessous ne fonctionne pas
-	/*if(block[valY][valX].pieceId.id === piece)
-	{
-		selectedPiece = piece;
-		selectedPieceX = valX;
-		selectedPieceY = valY;
-		console.log("yes");
+	if (block[selectedPieceY][selectedPieceX].id.king) { //est un roi
+		colorieCase(valX, valY, "#685f5b", true);
+	} else {//est un pion
+
+		//	if(checkAttack(valX,valY)){console.log("true");}
+		//
+		colorieCase(valX, valY, "#685f5b", true);
 
 	}
-	if(king === true){ //est une dames
 
-	}
-	else{ //un pion normal
- 		if(color === "white")
- 		{
-			if(valX === 10 && block[valX-1][valY-1].ocupied === false)
-			{
-				block[valY-1][valX-1].id.style.background = "#685f5b";
+	for (i = 1; i < 11; i++) {
 
-			}
- 		}
-		else
-		{
-			console.log("black");
+		for (i = 1; i < 10; i++) {
+			console.log(i);
+			console.log(block[j][i].greySquare);
 		}
 	}
-*/
 
 }
 
@@ -84,8 +132,14 @@ var checker = function (piece, color, valX, valY, boolKing) {
 
 	//Actif uniquement lorsqu'on appuie sur un pion
 	this.id.onclick = function  () {
+		if(boolCheckerSelected){ // SI UN PION ETAIT DEJA SELECTIONNE -> ON DE-COLORIE CES CASES
+			colorieCase(coordX_selected_checker, coordY_selected_checker, "#BA7A3A", false);
+		}
 		boolCheckerSelected = true;
-		showMoves(color,valX,valY,this.king,piece);
+		coordX_selected_checker = valX;
+		coordY_selected_checker = valY;
+		showMoves(valX, valY);
+
 	}
 };
 
@@ -103,12 +157,14 @@ function returnSquareIndex(x, y) {
 //Puis appuyer sur une case vide alors le pion se déplace
 // LES PIONS NOIR DEMARRENT A L'INDICE 100 -> IL FAUT FAIRE checkerIndex-100 POUR ACCEDER A LA PIECE DANS LA TABLEAU DES PIONS
 function makeMove(indexX,indexY) {
-	var startBlock = block[selectedPieceY][selectedPieceX]; // BLOC DE DEPART
-	var destinationBlock = block[indexY][indexX];           // BLOC D'ARRIVEE
-    let checkerIndex = startBlock.pieceId;                  // INDEX DE LA PIECE D'ECHEC
+
+	colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+	let startBlock = block[selectedPieceY][selectedPieceX]; // BLOC DE DEPART
+	const destinationBlock = block[indexY][indexX];           // BLOC D'ARRIVEE
+	let checkerIndex = startBlock.pieceId;                  // INDEX DE LA PIECE D'ECHEC
 
 	//affichage de débug
-	if(checkerIndex<100) console.log("BLANC");
+	if (checkerIndex < 100) console.log("BLANC");
 	else console.log("NOIR");
 	console.log("Piece selectionnee: X:" + selectedPieceX + " Y:" + selectedPieceY);
 	console.log("Case destination: X:" + indexX + " Y:" + indexY);
@@ -118,45 +174,121 @@ function makeMove(indexX,indexY) {
 	//Changement de valeur du bloc où se trouvait la pièce avant le déplacement
 	startBlock.ocupied = false;
 	let index_selected_square = returnSquareIndex(selectedPieceX, selectedPieceY);
-	startBlock = new square_p(square_class[index_selected_square], selectedPieceX, selectedPieceY);
+
+	// update adversaire board
+	socket.emit('UpdateBoard', {
+		start_cordx: selectedPieceX,
+		start_cordy: selectedPieceY,
+		dest_x: indexX,
+		dest_y: indexY,
+		piece_id: block[selectedPieceY][selectedPieceX].pieceId
+	});
+
+	console.log(block[selectedPieceY][selectedPieceX]);
+	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square], selectedPieceX, selectedPieceY);
 
 	//block[1][3].id.style.background = "#41BA3E";
 
 	//Changement de valeur du bloc de destination en fonction de couleur pion
-	if(checkerIndex < 100){
+	if (checkerIndex < 100) {
 		w_checker[checkerIndex] = new checker(white_checker_class[checkerIndex], "white", indexX, indexY, w_checker[checkerIndex].king);
 		w_checker[checkerIndex].setCoord(indexX, indexY);
 		w_checker[checkerIndex].checkIfKing();
-        destinationBlock.id = w_checker[checkerIndex];
+		block[indexY][indexX].id = w_checker[checkerIndex];
+
 	}
-	else{
-		b_checker[checkerIndex-100] = new checker(black_checker_class[checkerIndex-100], "black", indexX, indexY, b_checker[checkerIndex-100].king);
-		b_checker[checkerIndex-100].setCoord(indexX, indexY);
-		b_checker[checkerIndex-100].checkIfKing();
-        destinationBlock.id = b_checker[checkerIndex-100];
+	else {
+		b_checker[checkerIndex - 100] = new checker(black_checker_class[checkerIndex - 100], "black", indexX, indexY, b_checker[checkerIndex - 100].king);
+		b_checker[checkerIndex - 100].setCoord(indexX, indexY);
+		b_checker[checkerIndex - 100].checkIfKing();
+		block[indexY][indexX].id = b_checker[checkerIndex - 100];
+
 	}
 
 	//Changement de valeur du bloc de destination
-    destinationBlock.ocupied = true;
-    destinationBlock.pieceId = checkerIndex;
+	block[indexY][indexX].ocupied = true;
+	block[indexY][indexX].pieceId = checkerIndex;
 
 	//affichage de débug
 	console.log("Bloc d'arrivee après modif: \n Piece id: " + destinationBlock.pieceId + "\n Occupe: " + destinationBlock.ocupied + "\n ID: " + destinationBlock.id);
 	console.log("Block départ apres modif: \n Piece id: " + startBlock.pieceId + "\n Occupe: " + startBlock.ocupied + "\n ID: " + startBlock.id);
 	console.log("		MAKEMOVE\n---------------------------------");
+
+
 	selectedPieceY = 0;
 	selectedPieceX = 0;
 	boolCheckerSelected = false;
+	verifieFinJeu()
 }
+
+function verifieFinJeu() {
+	var nb_pions_blanc_vivant = 0;
+	var nb_pions_noir_vivant = 0;
+	console.log("ICI{");
+	for(var i in w_checker)
+	{
+		//console.log(w_checker[i]);
+	}
+	console.log("}ICI");
+	// PLUS DE PIECES D'UN JOUEUR
+
+	// EGALITE SI LE MEME MOUVEMENT SE REPRODUIT 3 FOIS AVEC LE MEME JOUEUR AYANT LA MEME POSSIBILITE DE MOUVEMENT (PAS FORCEMENT CONSECUTIF)
+
+	// EGALITE SI UN SEUL ROI CONTRE UN SEUL ROI
+
+	// SI EN 25 MOUV, AUCUNE PIECE N'EST DEPLACEE OU MANGEE
+
+	// SI COMBAT (3 ROI/2 ROI + 1 PIECE/1 ROI + 2 PIECE) CONTRE 1 ROI
+	return false;
+}
+
+function victory(joueur_gagnant) {
+	var nb_pions_blanc_vivant = 0;
+	var nb_pions_noir_vivant = 0;
+	for(var i in w_checker)
+	{
+		if(w_checker[i].alive == true){
+			nb_pions_blanc_vivant++;
+		}
+	}
+	console.log("ICI" + nb_pions_blanc_vivant);
+	for(var i in b_checker)
+	{
+		if(b_checker[i].alive == true){
+			nb_pions_noir_vivant++;
+		}
+	}
+	console.log("ICI" + nb_pions_blanc_vivant);
+	// PLUS DE PIECES D'UN JOUEUR
+
+	// EGALITE SI LE MEME MOUVEMENT SE REPRODUIT 3 FOIS AVEC LE MEME JOUEUR AYANT LA MEME POSSIBILITE DE MOUVEMENT (PAS FORCEMENT CONSECUTIF)
+
+	// EGALITE SI UN SEUL ROI CONTRE UN SEUL ROI
+
+	// SI EN 25 MOUV, AUCUNE PIECE N'EST DEPLACEE OU MANGEE
+
+	// SI COMBAT (3 ROI/2 ROI + 1 PIECE/1 ROI + 2 PIECE) CONTRE 1 ROI
+	return false;
+}
+
 //Classe de création des carrés
 //voir plus bas comment est utilisé
 var square_p = function (square, indeX, indeY) {
 	this.id = square;
 	this.ocupied = false;
 	this.pieceId = undefined;
-	this.id.onclick = function() {
-		if(boolCheckerSelected) makeMove(indeX,indeY);
-		else console.log("No checker selected before")
+	this.greySquare = false;
+	this.id.onclick = function () {
+
+		if (boolCheckerSelected && block[indeY][indeX].greySquare) makeMove(indeX, indeY);
+		else if (boolCheckerSelected && !block[indeY][indeX].greySquare){ // SI UNE PIECE EST SELECTIONNEE
+			console.log("Mouvement impossible");
+			colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+		}
+		else{
+			console.log("Aucune pièce n'est selectionnée");
+			colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+		}
 	}
 };
 
@@ -283,20 +415,25 @@ for (i = 16; i < 21; i++) {
 	block[4][b_checker[i].coordX].pieceId = i + 100;
 }
 
+
 /*
-for(i = 1 ; i <101; i++){
-	console.log(i);
-	console.log(square_class[i].indeX);
-}
-
 for (i = 1 ; i< 11 ; i++){
-	for (j=1 ; j<11; j++){
-		//console.log(block[i][j].pieceId);
-		//console.log(block[i][j].ocupied);
-		console.log(block[i][j].id);
-		console.log(returnSquareIndex(j,i));
 
+	for(i = 1 ; i <10; i++){
+		console.log(i);
+		console.log(block[6][i].id.style.background);
+		console.log(block[6][i].greySquare);
 	}
+    for (j=1 ; j<11; j++){
+
+        console.log(block[i][j].id);
+        console.log(block[i][j].id.style.background);
+        //console.log(returnSquareIndex(j,i));
+
+    }
 
 }
 */
+//console.log(square_class[i].indeX);
+//console.log(block[i][j].pieceId);
+//console.log(block[i][j].ocupied);
