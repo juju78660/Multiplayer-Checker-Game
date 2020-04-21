@@ -20,34 +20,33 @@
     <!--===============================================================================================-->
     <link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
     <!--===============================================================================================-->
-    <link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
-    <!--===============================================================================================-->
-    <link rel="stylesheet" type="text/css" href="vendor/daterangepicker/daterangepicker.css">
-    <!--===============================================================================================-->
-    <link rel="stylesheet" type="text/css" href="css/util.css">
-    <link rel="stylesheet" type="text/css" href="css/main.css">
-    <!--===============================================================================================-->
 
-    <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-analytics.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-storage.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-firestore.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
 
+        <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-analytics.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-auth.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-database.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-storage.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-firestore.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+        <!--===============================================================================================-->
+        <link rel="stylesheet" type="text/css" href="vendor/daterangepicker/daterangepicker.css">
+        <!--===============================================================================================-->
+        <link rel="stylesheet" type="text/css" href="css/util.css">
+        <link rel="stylesheet" type="text/css" href="css/main.css">
+        <!--===============================================================================================-->
 </head>
+    <body>
+        <p><b>Hello {{ user.displayName }} (UID: {{ user.uid }} )</b></p>
 
-<body>
-<p><b>Hello {{ username }} (UID: {{ uid }} )</b></p>
-<div class="container-login100-form-btn m-t-32">
-    <button id="btn_logout" onclick="window.location='/disconnect';" class="login100-form-btn">Logout</button>
-</div>
+        <div id="users"></div>
 
-<div class="container-login100-form-btn m-t-32">
-    <button id="btn_play" onclick="window.location='/play';" class="login100-form-btn">Play</button>
-</div>
-
-<div id="dropDownSelect1"></div>
+        <div class="container-login100-form-btn m-t-32">
+            <button id="btn_logout" onclick="window.location='/disconnect';" class="login100-form-btn">Logout</button>
+        </div>
+        <script src="main.js"></script>
 
 <!--===============================================================================================-->
 <script src="vendor/jquery/jquery-3.2.1.min.js"></script>
@@ -64,8 +63,5 @@
 <!--===============================================================================================-->
 <script src="vendor/countdowntime/countdowntime.js"></script>
 <!--===============================================================================================-->
-<script src="js/main.js"></script>
-<script src="./app.js"></script>
-</body>
-
+    </body>
 </html>

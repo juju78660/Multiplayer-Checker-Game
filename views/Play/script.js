@@ -5,9 +5,8 @@
 		_ l'axe des ordonnées est : y ou j
 		bloc[1][2] va avoir pour coordonnée x = 2 , y = 1
 		donc c'est pour accéder à un champs  bloc[y][x]
-
-
  */
+
 const square_class = document.getElementsByClassName("square");
 const white_checker_class = document.getElementsByClassName("white_checker");
 const black_checker_class = document.getElementsByClassName("black_checker");
@@ -28,34 +27,6 @@ const b_checker = [];
 //const mustAttack = false;
 
 let boolCheckerSelected = false;
-
-
-function Point(x, y) {
-	this.x = x;
-	this.y = y;
-}
-
-function equalsPoint(Point1, Point2) {
-	return Point1.x === Point2.x && Point1.y === Point2.y;
-}
-
-
-function Node(data) {
-	this.data = data;
-	this.parent = null;
-	this.children = [];
-}
-
-function Tree(data) {
-	this._root = new Node(data);
-}
-
-
-Tree.prototype.add = function (data) {
-	var child = new Node(data);
-	this.push(child);
-	child.parent = this;
-};
 
 function checkPosition(x, y) {
 	return x === 0 || x === 11 || y === 0 || y === 11;
@@ -100,32 +71,23 @@ function colorieCase(valX, valY, couleur, bool) {
 	}
 }
 
-function checkEnnemi(x, y) {
-	if (block[y][x].ocupied) {
-		return block[y][x].id.color !== block[selectedPieceY][selectedPieceX].id.color;
+function checkAttack(valX, valY) {
+	let x = valX;
+	let y = valY;
+	while (true) {
+		x++;
+		y++;
+		if (checkPosition(x, y)) break;
+		if (block[y][x].ocupied && !block[y++][x++].ocupied) {
+			console.log("ici");
+			block[y][x].id.style.background = "#685f5b";
+			block[y][x].greySquare = true;
+			return true;
 
+		}
 	}
 	return false;
 }
-
-function attackPath(valX, valY, tree) {
-	if (checkPosition(valX, valY)) return null;
-	if (checkEnnemi(valX, valY)) {
-		if (selectedPieceX > valX && selectedPieceY > valY) {
-			//pion ennemi en diagonale haut gauche
-
-		} else if (selectedPieceX < valX && selectedPieceY > valY) {
-			//pion ennemi en diagonale haut droite
-		} else if (selectedPieceX < valX && selectedPieceY < valY) {
-			//pion ennemi en bas droite
-		} else if (selectedPieceX > valX && selectedPieceY < valY) {
-			//pion ennemu bas gauche
-		}
-
-	}
-
-}
-
 
 //actif uniqument lorsqu'on appuie sur un pion
 function showMoves(valX, valY) {
@@ -137,10 +99,22 @@ function showMoves(valX, valY) {
 	if (block[selectedPieceY][selectedPieceX].id.king) { //est un roi
 		colorieCase(valX, valY, "#685f5b", true);
 	} else {//est un pion
+
+		//	if(checkAttack(valX,valY)){console.log("true");}
+		//
 		colorieCase(valX, valY, "#685f5b", true);
 
-
 	}
+
+	for (i = 1; i < 11; i++) {
+
+		for (i = 1; i < 10; i++) {
+			console.log(i);
+			console.log(block[j][i].greySquare);
+		}
+	}
+
+
 
 
 }
@@ -177,7 +151,7 @@ function returnSquareIndex(x, y) {
 //Puis appuyer sur une case vide alors le pion se déplace
 // LES PIONS NOIR DEMARRENT A L'INDICE 100 -> IL FAUT FAIRE checkerIndex-100 POUR ACCEDER A LA PIECE DANS LA TABLEAU DES PIONS
 function makeMove(indexX,indexY) {
-	console.log(block[indexY][indexX].id);
+
 	colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 	let startBlock = block[selectedPieceY][selectedPieceX]; // BLOC DE DEPART
 	const destinationBlock = block[indexY][indexX];           // BLOC D'ARRIVEE
@@ -194,6 +168,17 @@ function makeMove(indexX,indexY) {
 	//Changement de valeur du bloc où se trouvait la pièce avant le déplacement
 	startBlock.ocupied = false;
 	let index_selected_square = returnSquareIndex(selectedPieceX, selectedPieceY);
+
+	// update adversaire board
+	socket.emit('UpdateBoard', {
+		start_cordx: selectedPieceX,
+		start_cordy: selectedPieceY,
+		dest_x: indexX,
+		dest_y: indexY,
+		piece_id: block[selectedPieceY][selectedPieceX].pieceId
+	});
+
+	console.log(block[selectedPieceY][selectedPieceX]);
 	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square], selectedPieceX, selectedPieceY);
 
 	//block[1][3].id.style.background = "#41BA3E";
@@ -204,11 +189,14 @@ function makeMove(indexX,indexY) {
 		w_checker[checkerIndex].setCoord(indexX, indexY);
 		w_checker[checkerIndex].checkIfKing();
 		block[indexY][indexX].id = w_checker[checkerIndex];
-	} else {
+
+	}
+	else {
 		b_checker[checkerIndex - 100] = new checker(black_checker_class[checkerIndex - 100], "black", indexX, indexY, b_checker[checkerIndex - 100].king);
 		b_checker[checkerIndex - 100].setCoord(indexX, indexY);
 		b_checker[checkerIndex - 100].checkIfKing();
 		block[indexY][indexX].id = b_checker[checkerIndex - 100];
+
 	}
 
 	//Changement de valeur du bloc de destination
@@ -219,6 +207,8 @@ function makeMove(indexX,indexY) {
 	console.log("Bloc d'arrivee après modif: \n Piece id: " + destinationBlock.pieceId + "\n Occupe: " + destinationBlock.ocupied + "\n ID: " + destinationBlock.id);
 	console.log("Block départ apres modif: \n Piece id: " + startBlock.pieceId + "\n Occupe: " + startBlock.ocupied + "\n ID: " + startBlock.id);
 	console.log("		MAKEMOVE\n---------------------------------");
+
+
 	selectedPieceY = 0;
 	selectedPieceX = 0;
 	boolCheckerSelected = false;
@@ -232,10 +222,9 @@ var square_p = function (square, indeX, indeY) {
 	this.pieceId = undefined;
 	this.greySquare = false;
 	this.id.onclick = function () {
-		if (boolCheckerSelected && block[indeY][indeX].greySquare) {
 
-			makeMove(indeX, indeY);
-		} else {
+		if (boolCheckerSelected && block[indeY][indeX].greySquare) makeMove(indeX, indeY);
+		else {
 			console.log("No checker selected before");
 			colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 		}
@@ -365,12 +354,19 @@ for (i = 16; i < 21; i++) {
 	block[4][b_checker[i].coordX].pieceId = i + 100;
 }
 
+
 /*
 for (i = 1 ; i< 11 ; i++){
 
+	for(i = 1 ; i <10; i++){
+		console.log(i);
+		console.log(block[6][i].id.style.background);
+		console.log(block[6][i].greySquare);
+	}
     for (j=1 ; j<11; j++){
 
         console.log(block[i][j].id);
+        console.log(block[i][j].id.style.background);
         //console.log(returnSquareIndex(j,i));
 
     }
