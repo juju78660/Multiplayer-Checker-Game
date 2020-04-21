@@ -21,10 +21,11 @@ socket.on("updateUserConnected", function (users) {
         btn.innerHTML = "Battle";
         btn.setAttribute("class", "btn btn-dark");
         btn.addEventListener('click', function () {
-          socket.emit('battle', {challengedSocketId: user.idSocket}, function () {
-            location.href = '/play.html';
-            });
-        })
+          socket.emit('battle', {
+            challengedSocketId: user.idSocket,
+            challengerSocketId: socket.id
+          });
+        });
         ol.appendChild(btn);
     });
     // append to front div

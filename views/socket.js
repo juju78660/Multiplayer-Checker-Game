@@ -1,6 +1,4 @@
-var socket = io({transports: ['websocket'], upgrade: false});
-
-console.log(cookieSession);
+var socket = io();
 
 // socket connection cote client
 socket.on('connect', function () {

@@ -99,6 +99,11 @@ function showMoves(valX, valY) {
 	/**
 		METTRE LE IF BLANC IF NOIR ET IF TOUR
 	**/
+	socket.emit('who', {
+		challenger: challenger,
+		challenged: challenged
+	});
+
 
 	selectedPieceX = valX;
 	selectedPieceY = valY;

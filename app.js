@@ -243,14 +243,6 @@ app.get('/disconnect', function(req, res) {
     res.redirect('/');
 });
 
-// use a cookie
-app.use(cookieSession({
-  name: 'session',
-  keys: [],
-  // Cookie Options
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}))
-
 
 let users = new Users();
 
@@ -262,6 +254,8 @@ io.on('connection', (socket) => {
 
     if (user) {
 
+        console.log(user.uid);
+        console.log(user.displayName);
         // Create userobj and add to users
         let userobj = new userObj(socket.id, user.uid, user.displayName);
 
@@ -272,18 +266,15 @@ io.on('connection', (socket) => {
             console.log(users);
         }
         // else change socket id
-        /*else {
+        else {
           // il remplace 2 fois au meme endroit
-          console.log("uid : " + user.uid);
-          console.log(userobj);
+          console.log(user.uid);
           console.log("change socket id : " + socket.id);
-          console.log("#Avant :");
-          console.log(users);
           users.getUserById(userobj.idUser).idSocket = socket.id;
-          console.log("Apres :");
+          console.log("#Apres :");
           console.log(users);
           io.emit('updateUserConnected', users.getUsers());
-        }*/
+        }
 
         // Remove the user from the list and send it to the front
         socket.on('NewLogout', (message) => {
@@ -302,20 +293,27 @@ io.on('connection', (socket) => {
           }
         });
         // socket battle
-        socket.on('battle', (res, callback) => {
+        socket.on('battle', (res) => {
 
           // recover both opponent
-          let challenger = users.getUserBySocket(socket.id);
+          let challenger = users.getUserBySocket(res.challengerSocketId);
           let challenged = users.getUserBySocket(res.challengedSocketId);
 
           // Verif available & send both in play.html
           if (challenger.invite(challenged) == true) {
 
-            // save the opponent socket
+            // challenger take black
             challenger.socketOpponent = challenged.idSocket;
-            challenged.socketOpponent = challenger.idSocket;
+            challenger.white = false;
 
-            socket.broadcast.to(challenged.idSocket).emit('battlePage');
+            // challenged take white
+            challenger.socketOpponent = challenger.idSocket;
+            challenger.white = true;
+            challenger.turn = true;
+
+            // Send both in play & update list
+            io.to(challenger.idSocket).emit('battlePage');
+            io.to(challenged.idSocket).emit('battlePage');
             io.emit('updateUserConnected', users.getUsers());
 
             // Wait until they are on play.html
@@ -327,8 +325,15 @@ io.on('connection', (socket) => {
             }, 5000);
 
             // send currrent user in play.html
-            callback();
+            //callback();
           }
+        });
+
+        socket.on('who', (res, callback) => {
+          console.log("#Who");
+          console.log(users);
+          console.log(socket.id);
+          console.log(users.getUserBySocket(socket.id));
         })
 
         // update the adversaire board
