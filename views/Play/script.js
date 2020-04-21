@@ -26,7 +26,10 @@ const b_checker = [];
 //let anotherMove;
 //const mustAttack = false;
 
-let boolCheckerSelected = false;
+let boolCheckerSelected = false; 		// SI UNE PIECE EST SELECTIONNEE
+// COORDONNEE DE LA PIECE SELECTIONNEE -> SI UNE AUTRE PIECE EST DEJA SELECTIONNEE, ON DECOLORIE CETTE ANCIENNE PIECE AVEC SES COORDONNEES
+let coordX_selected_checker;
+let coordY_selected_checker;
 
 function checkPosition(x, y) {
 	return x === 0 || x === 11 || y === 0 || y === 11;
@@ -119,9 +122,6 @@ function showMoves(valX, valY) {
 		}
 	}
 
-
-
-
 }
 
 //class d'un pion
@@ -137,8 +137,14 @@ var checker = function (piece, color, valX, valY, boolKing) {
 
 	//Actif uniquement lorsqu'on appuie sur un pion
 	this.id.onclick = function  () {
+		if(boolCheckerSelected){ // SI UN PION ETAIT DEJA SELECTIONNE -> ON DE-COLORIE CES CASES
+			colorieCase(coordX_selected_checker, coordY_selected_checker, "#BA7A3A", false);
+		}
 		boolCheckerSelected = true;
+		coordX_selected_checker = valX;
+		coordY_selected_checker = valY;
 		showMoves(valX, valY);
+
 	}
 };
 
@@ -217,8 +223,59 @@ function makeMove(indexX,indexY) {
 	selectedPieceY = 0;
 	selectedPieceX = 0;
 	boolCheckerSelected = false;
-
+	verifieFinJeu()
 }
+
+function verifieFinJeu() {
+	var nb_pions_blanc_vivant = 0;
+	var nb_pions_noir_vivant = 0;
+	console.log("ICI{");
+	for(var i in w_checker)
+	{
+		//console.log(w_checker[i]);
+	}
+	console.log("}ICI");
+	// PLUS DE PIECES D'UN JOUEUR
+
+	// EGALITE SI LE MEME MOUVEMENT SE REPRODUIT 3 FOIS AVEC LE MEME JOUEUR AYANT LA MEME POSSIBILITE DE MOUVEMENT (PAS FORCEMENT CONSECUTIF)
+
+	// EGALITE SI UN SEUL ROI CONTRE UN SEUL ROI
+
+	// SI EN 25 MOUV, AUCUNE PIECE N'EST DEPLACEE OU MANGEE
+
+	// SI COMBAT (3 ROI/2 ROI + 1 PIECE/1 ROI + 2 PIECE) CONTRE 1 ROI
+	return false;
+}
+
+function victory(joueur_gagnant) {
+	var nb_pions_blanc_vivant = 0;
+	var nb_pions_noir_vivant = 0;
+	for(var i in w_checker)
+	{
+		if(w_checker[i].alive == true){
+			nb_pions_blanc_vivant++;
+		}
+	}
+	console.log("ICI" + nb_pions_blanc_vivant);
+	for(var i in b_checker)
+	{
+		if(b_checker[i].alive == true){
+			nb_pions_noir_vivant++;
+		}
+	}
+	console.log("ICI" + nb_pions_blanc_vivant);
+	// PLUS DE PIECES D'UN JOUEUR
+
+	// EGALITE SI LE MEME MOUVEMENT SE REPRODUIT 3 FOIS AVEC LE MEME JOUEUR AYANT LA MEME POSSIBILITE DE MOUVEMENT (PAS FORCEMENT CONSECUTIF)
+
+	// EGALITE SI UN SEUL ROI CONTRE UN SEUL ROI
+
+	// SI EN 25 MOUV, AUCUNE PIECE N'EST DEPLACEE OU MANGEE
+
+	// SI COMBAT (3 ROI/2 ROI + 1 PIECE/1 ROI + 2 PIECE) CONTRE 1 ROI
+	return false;
+}
+
 //Classe de création des carrés
 //voir plus bas comment est utilisé
 var square_p = function (square, indeX, indeY) {
@@ -229,8 +286,12 @@ var square_p = function (square, indeX, indeY) {
 	this.id.onclick = function () {
 
 		if (boolCheckerSelected && block[indeY][indeX].greySquare) makeMove(indeX, indeY);
-		else {
-			console.log("No checker selected before");
+		else if (boolCheckerSelected && !block[indeY][indeX].greySquare){ // SI UNE PIECE EST SELECTIONNEE
+			console.log("Mouvement impossible");
+			colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+		}
+		else{
+			console.log("Aucune pièce n'est selectionnée");
 			colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 		}
 	}
