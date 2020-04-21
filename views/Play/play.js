@@ -1,11 +1,8 @@
+let challenger;
+let challenged;
 
-let socket = io();
-
-// socket connection cote client
-socket.on('connect', function () {
-		// socket when new user connecte
-
-		socket.on("UpdateAdversaireBoard", (res) => {
+// socket when opponent moove
+socket.on("UpdateAdversaireBoard", (res) => {
 			block[res.start_cordy][res.start_cordx] = new square_p(square_class[returnSquareIndex(res.start_cordx, res.start_cordy)], res.start_cordx, res.start_cordy);
 
 			if (res.piece_id < 100) {
@@ -29,16 +26,9 @@ socket.on('connect', function () {
 
 		});
 
-    socket.on("updateUserConnected", function (res) {
-      console.log(res);
-    });
-
+		// recover both user
     socket.on("UpdateBattle", function (res) {
-      console.log(res);
+			console.log(res);
+			challenged = res.challenged;
+			challenger = res.challenger;
     });
-});
-
-// socket deconnection cote client
-socket.on('disconnect', function () {
-		console.log("disconected client side");
-		});

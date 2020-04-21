@@ -7,6 +7,7 @@ var firebase = require('firebase');
 var firebaseConfig = require('./js/firebase.js');
 const { userObj } = require('./js/userObj');
 const { Users } = require('./js/Users');
+var cookieSession = require('cookie-session')
 
 // INITIALIZE THE APP
 const app = express();
@@ -222,6 +223,7 @@ app.get('/main', function(req, res) {
     else{
         res.sendFile('Main/main.html', { root: __dirname + "/views" } );
     }
+    //res.render('main')
 });
 
 app.get('/play', function(req, res) {
@@ -241,11 +243,21 @@ app.get('/disconnect', function(req, res) {
     res.redirect('/');
 });
 
+// use a cookie
+app.use(cookieSession({
+  name: 'session',
+  keys: [],
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
+
+
 let users = new Users();
 
 // the server listen for a connection
 io.on('connection', (socket) => {
 
+    console.log("connected server side");
     user = firebase.auth().currentUser;
 
     if (user) {
@@ -257,7 +269,21 @@ io.on('connection', (socket) => {
         if (!users.getUserById(userobj.idUser)) {
             users.addUser(userobj);
             io.emit('updateUserConnected', users.getUsers());
+            console.log(users);
         }
+        // else change socket id
+        /*else {
+          // il remplace 2 fois au meme endroit
+          console.log("uid : " + user.uid);
+          console.log(userobj);
+          console.log("change socket id : " + socket.id);
+          console.log("#Avant :");
+          console.log(users);
+          users.getUserById(userobj.idUser).idSocket = socket.id;
+          console.log("Apres :");
+          console.log(users);
+          io.emit('updateUserConnected', users.getUsers());
+        }*/
 
         // Remove the user from the list and send it to the front
         socket.on('NewLogout', (message) => {
@@ -267,15 +293,18 @@ io.on('connection', (socket) => {
 
         // Remove the user from the list and send it to the front
         socket.on('disconnect', () => {
-          // if not in battle remove him
-          if ((users.getUserById(userobj.idUser)).available == true) {
-              users.removeUser(userobj.getIdUser());
-              io.emit('updateUserConnected', users.getUsers());
+          // if user exist not in battle remove him
+          if (users.getUserById(userobj.idUser)) {
+            if ((users.getUserById(userobj.idUser)).available == true) {
+                users.removeUser(userobj.getIdUser());
+                io.emit('updateUserConnected', users.getUsers());
+            }
           }
         });
-        // Battle socket
+        // socket battle
         socket.on('battle', (res, callback) => {
 
+          // recover both opponent
           let challenger = users.getUserBySocket(socket.id);
           let challenged = users.getUserBySocket(res.challengedSocketId);
 
@@ -291,8 +320,10 @@ io.on('connection', (socket) => {
 
             // Wait until they are on play.html
             setTimeout( () => {
-              io.emit('UpdateBattle', users);
-              console.log("ralentie");
+              io.emit('UpdateBattle', {
+                challenger: challenger,
+                challenged: challenged
+              });
             }, 5000);
 
             // send currrent user in play.html

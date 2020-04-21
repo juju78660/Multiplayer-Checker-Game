@@ -92,6 +92,11 @@ function checkAttack(valX, valY) {
 //actif uniqument lorsqu'on appuie sur un pion
 function showMoves(valX, valY) {
 	//Enregistrement des coordonnées de la pièces qu'on veut déplacer
+
+	/**
+		METTRE LE IF BLANC IF NOIR ET IF TOUR
+	**/
+
 	selectedPieceX = valX;
 	selectedPieceY = valY;
 	console.log("---------------------------------\n		SHOWMOVES");

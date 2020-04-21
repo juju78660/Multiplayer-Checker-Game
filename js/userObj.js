@@ -11,6 +11,8 @@ class userObj {
         this.username = username;
         this.available = true;
         this.socketOpponent = null;
+        this.white = false;
+        this.turn = false;
     }
 
     getIdSocket() {
