@@ -354,6 +354,105 @@ for (i = 16; i < 21; i++) {
 	block[4][b_checker[i].coordX].pieceId = i + 100;
 }
 
+/*
+//=================================================================================
+//fonctions pour sauter un adversaire
+function checkpossibleAttack(indexX, indexY){
+	//on commence par vérifier que c'est bien une prise (et donc, d'un saut de deux cases, où la case du milieu est de la couleur opposée)
+	//puis on applique la prise en elle-même
+if (selectedPieceY - indexY === 2){
+	if (selectedPieceX - indexX === 2){
+		if (checkerIndex < 100){
+			if (block[selectedPieceY+1][selectedPieceX+1].id>100)
+			{AttackCase1(indexX, indexY);}
+			}
+		if (checkerIndex > 100){
+			if (block[selectedPieceY+1][selectedPieceX+1].id<100)
+			{AttackCase1(indexX, indexY);}
+			}
+		}
+	if (selectedPieceX - indexX === -2){	
+		if (checkerIndex < 100){
+			if (block[selectedPieceY+1][selectedPieceX-1].id<100)
+			{AttackCase2(indexX, indexY);}
+			}
+		if (checkerIndex < 100){
+			if (block[selectedPieceY+1][selectedPieceX-1].id>100)
+			{AttackCase2(indexX, indexY);}
+	}	
+	}    
+	}
+if (selectedPieceY - indexY === -2){
+		if (selectedPieceX - indexX === 2){
+			if (checkerIndex < 100){
+				if (block[selectedPieceY-1][selectedPieceX+1].id>100)
+				{AttackCase3(indexX, indexY);}
+				}
+			if (checkerIndex > 100){
+				if (block[selectedPieceY-1][selectedPieceX+1].id<100)
+				{AttackCase3(indexX, indexY);}
+				}
+			}
+		if (selectedPieceX - indexX === -2){	
+			if (checkerIndex < 100){
+				if (block[selectedPieceY-1][selectedPieceX-1].id<100)
+				{AttackCase4(indexX, indexY);}
+				}
+			if (checkerIndex < 100){
+				if (block[selectedPieceY-1][selectedPieceX-1].id>100)
+				{AttackCase4(indexX, indexY);}
+				}	
+			}    
+	}
+
+
+//la fonction de prise consiste simpelment en un mouvement du pion de deux cases, puis du retrait du pion du mileu.  
+//Ici un simple passage de la case du mileu en "vide" et du pion en "absent', car on ne pas retirer le pion de la liste des pièces sans risquer de chambouler toute la liste
+function AttackCase1(indexX, indexY){
+	makeMove(indexX,indexY);
+	let BlockPris = [selectedPieceX-1][selectedPieceY-1];
+	BlockPris.ocupied = false;
+	let index_selected_square = returnSquareIndex(selectedPieceX-1, selectedPieceY-1);
+	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square], selectedPieceX-1, selectedPieceY-1);
+}
+
+function AttackCase2(indexX, indexY){
+	makeMove(indexX,indexY);
+	let BlockPris = [selectedPieceX+1][selectedPieceY-1];
+	BlockPris.ocupied = false;
+	let index_selected_square = returnSquareIndex(selectedPieceX+1, selectedPieceY-1);
+	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square], selectedPieceX+1, selectedPieceY-1);
+}
+
+function AttackCase3(indexX, indexY){
+	makeMove(indexX,indexY);
+	let BlockPris = block[selectedPieceX-1][selectedPieceY+1];
+	BlockPris.ocupied = false;
+	let index_selected_square = returnSquareIndex(selectedPieceX-1, selectedPieceY+1);
+	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square], selectedPieceX-1, selectedPieceY+1);
+}
+
+function AttackCase4(indexX, indexY){
+	makeMove(indexX,indexY);
+	let BlockPris = block[selectedPieceX+1][selectedPieceY+1];
+	BlockPris.ocupied = false;
+	let index_selected_square = returnSquareIndex(selectedPieceX+1, selectedPieceY+1);
+	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square], selectedPieceX+1, selectedPieceY+1);
+}*/
+
+function effacerliste (liste){
+	PointARetirer(x,y);
+	while (liste.length>0)
+	{
+	PointARetirer=pop(liste);
+	BlocAVider[PointARetirer.x][PointARetirer.y];
+	BlocAVider[PointARetirer.x][PointARetirer.y].id.alive=false;
+	BlocAVider.ocupied = false;
+	let index_selected_square = returnSquareIndex(x,y);
+	
+	}
+}
+
 
 /*
 for (i = 1 ; i< 11 ; i++){
