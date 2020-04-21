@@ -7,7 +7,6 @@ var firebase = require('firebase');
 var firebaseConfig = require('./js/firebase.js');
 const { userObj } = require('./js/userObj');
 const { Users } = require('./js/Users');
-var cookieSession = require('cookie-session')
 
 // INITIALIZE THE APP
 const app = express();

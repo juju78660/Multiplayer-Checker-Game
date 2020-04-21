@@ -42,11 +42,6 @@ Add nunjuck dependencie
 npm install nunjuck
 ```
 
-Add cookie-session dependencie
-```
-npm install cookie-session
-```
-
 Add a file .env at the roor of the project with a variable FIREBASE_CONFIG with the api key
 
 Run the web app
