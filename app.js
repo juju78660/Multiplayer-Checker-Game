@@ -1,63 +1,51 @@
 const express = require('express');
-const app = express();
 const bodyP = require('body-parser');
+var nunjucks = require('nunjucks');
+const http = require('http');
+const socketIO = require('socket.io');
+var firebase = require('firebase');
+var firebaseConfig = require('./js/firebase.js');
+const { userObj } = require('./js/userObj');
+const { Users } = require('./js/Users');
+
+// INITIALIZE THE APP
+const app = express();
 app.use(bodyP.json());
 app.use(bodyP.urlencoded({ extended: true }));
-const port = 3000;
 
 // ADD STATIC FOLDERS AND FILES USED IN THE PROGRAM
 app.use(express.static("views"));
 app.use(express.static("views/Home"));
 app.use(express.static("views/Login"));
 app.use(express.static("views/Register"));
+app.use(express.static("views/Main"));
 app.use(express.static("views/Play"));
-app.use(express.static("firebase.js"));
 
 // ENGINE USE TO RENDER
-var nunjucks = require('nunjucks');
-
 nunjucks.configure('views', {
     express: app,
     autoescape: true
 });
 app.set('view engine', 'html');
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
-
-// *** FIREBASE ***
-var firebase = require('firebase');
-require('firebase/auth');
-require('firebase/database');
 
 // INITIALISE FIREBASE
-var firebaseConfig = require('./firebase.js');
 firebase.initializeApp(firebaseConfig.getFirebaseConfig());
 
+// SOCKET IO NEED OUR OWN HTTP SERVER
+const port = 3000;
+let server = http.createServer(app);
+let io = socketIO(server);
+
 /****** Routes *******/
-/*
 app.get('/', function(req, res){
-    var user = firebase.auth().currentUser;
-    if(!user){
-        res.sendFile('home.html', { root: __dirname + "/views/Home" } );
-    }
-    else{
-        res.redirect('/main');
-    }
-});
-*/
-app.get('/', function(req, res) {
-    res.sendFile('play.html', { root: __dirname + "/views/Play" } );
-
+    // Retirer if else pour pouvoir connecter plusieurs utilisateur
+    res.sendFile('home.html', { root: __dirname + "/views/Home" } );
 });
 
-/****** REGISTER *******/
 app.get('/register', function(req, res) {
-    if(!firebase.auth().currentUser){
-        res.render('Register/register');
-    }
-    else{
-        res.redirect('/main');
-    }
+    // Retirer if else pour pouvoir connecter plusieurs utilisateur
+    res.render('Register/register');
 });
 
 app.post('/register', async function(req, res) {
@@ -75,64 +63,54 @@ app.post('/register', async function(req, res) {
 
     if(password == repassword)
     {
-        //CHECK IF USER ALREADY EXISTS IN DB
-        const usersRef = db.collection('users').doc(username);
-        usersRef.get()
-            .then((docSnapshot) => {
-                if (docSnapshot.exists) {   // IF USERNAME ALREADY EXISTS -> STOP PROCESS
-                    console.log("User " + username + " already exists in DB");
-                    res.render('Register/register', {error_message: "Username is already in use !",
-                        username: username,
+
+        // AJOUT COMPTE AUTHENTIFICATION
+        firebase.auth().createUserWithEmailAndPassword(email,password).catch(function(error)
+        {
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            console.log(errorCode + ":" + errorMessage);
+
+            res.render('Register/register', {error_message: errorMessage,
+                username: req.body.username,
+                email: req.body.email,
+                password: req.body.password,
+                re_password: req.body.re_password
+            });
+        });
+
+        // AJOUT UTILISATEUR BD
+        firebase.auth().onAuthStateChanged(function(user)
+        {
+            if(user){
+                // ADD USERNAME INFO TO AUTH SYSTEM
+                user.updateProfile({
+                    displayName: username
+                }).then(function() {
+
+                    // ADD USER TO THE DB
+                    var userUID = user.uid;
+                    let data = {
+                        username : username,
                         email: email,
-                        password: password,
-                        re_password: repassword
-                    });
-                } else {    // IF USER DOESN'T EXISTS -> CONTINUE CREATION PROCESS
-                    // AJOUT COMPTE AUTHENTIFICATION
-                    firebase.auth().createUserWithEmailAndPassword(email,password).then(function(firebaseUser) {
-                        console.log("Account {Email:" + email + " - username:" + username + "} successfully created");
-                        // AJOUT UTILISATEUR BD
-                        firebase.auth().onAuthStateChanged(function(user)
-                        {
-                            if(user && firstStateChange){
-                                firstStateChange = false;
-                                // ADD USERNAME INFO TO AUTH SYSTEM
-                                user.updateProfile({
-                                    displayName: username
-                                }).then(function() {
-                                    // ADD USER TO THE DB
-                                    var userUID = user.uid;
-                                    let data = {
-                                        username : username,
-                                        UID : userUID,
-                                        email: email,
-                                        win: 0,
-                                        lost: 0
-                                    };
-                                    db.collection("users").doc(username).set(data)
-                                        .then(function() {
-                                            console.log("User {Username:" + username + " - UID:" + userUID + " - email:" + email + "} added to DB");
-                                            res.redirect('/main');
-                                        })
-                                        // IF USER CAN'T BE ADDED TO DB, REMOVING ACCOUNT FROM FIREBASE AUTHENTICATION
-                                        .catch(function(error) {
-                                            console.error("Error adding user: ", error);
-                                            var user = firebase.auth().currentUser;
-                                            if(user){
-                                                console.error("USER LOGGED");
-                                                user.delete().then(function() {
-                                                    console.error("USER ACCOUNT DELETED");
-                                                }).catch(function(error) {
-                                                    console.error("Error deleting user account: ", error);
-                                                });
-                                            }
-                                            console.log("REDIRECTION VERS /register a faire");
-                                        });
+                        win: 0,
+                        lost: 0
+                    };
+                    db.collection("users").doc(userUID).set(data)
+                        .then(function() {
+                            res.render('Main/main', {user: user});
+                            return;
+                        })
 
-                                }).catch(function(error) {
-                                    console.error("Error setting username: ", error);
-                                });
-
+                        // IF USER CAN'T BE ADDED TO DB, REMOVING ACCOUNT FROM FIREBASE AUTHENTICATION
+                        .catch(function(error) {
+                            console.error("Error adding user: ", error);
+                            var user = firebase.auth().currentUser;
+                            if(user){
+                                console.error("USER LOGGED");
+                                user.delete()
+                                .then(function() {console.error("USER ACCOUNT DELETED");})
+                                .catch(function(error) { console.error("Error deleting user account: ", error);});
                             }
                         });
                     })
@@ -165,13 +143,8 @@ app.post('/register', async function(req, res) {
 
 /****** LOGIN *******/
 app.get('/login', function(req, res) {
-    var user = firebase.auth().currentUser;
-    if(!user){
+    // retirer if else pour pouvoir connecter plusieurs utilisateur
         res.render('Login/login');
-    }
-    else{
-        res.redirect("/main");
-    }
 });
 
 app.post('/login', async function(req, res) {
@@ -184,8 +157,7 @@ app.post('/login', async function(req, res) {
             firebase.auth().onAuthStateChanged(function(user) {
                 if (user && firstStateChange) {
                     firstStateChange = false;
-                    console.log("username:" + user.displayName + "-" + "UID:" + user.uid);
-                    res.redirect("/main");
+                    res.render('Main/main', {  user: user });
                 }
             });
         })
@@ -248,7 +220,16 @@ app.get('/main', function(req, res) {
         res.redirect('/login');
     }
     else{
-        res.render('main', { username: user.displayName, uid: user.uid });
+        res.sendFile('Main/main.html', { root: __dirname + "/views" } );
+    }
+});
+
+app.get('/play', function(req, res) {
+    if(!firebase.auth().currentUser){
+        res.redirect('/login');
+    }
+    else{
+        res.sendFile('Play/play.html', { root: __dirname + "/views" } );
     }
 });
 
@@ -260,12 +241,71 @@ app.get('/disconnect', function(req, res) {
     res.redirect('/');
 });
 
-/****** PLAY *******/
-app.get('/play', function(req, res) {
-    if(firebase.auth().currentUser){
-        res.sendFile('play.html', { root: __dirname + "/views/Play" } );
-    }
-    else{
-        res.redirect('/');
+let users = new Users();
+
+// the server listen for a connection
+io.on('connection', (socket) => {
+
+    user = firebase.auth().currentUser;
+
+    if (user) {
+
+        // Create userobj and add to users
+        let userobj = new userObj(socket.id, user.uid, user.displayName);
+
+        // if not already in the list add him & send the update list
+        if (!users.getUserById(userobj.idUser)) {
+            users.addUser(userobj);
+            io.emit('updateUserConnected', users.getUsers());
+        }
+
+        // Remove the user from the list and send it to the front
+        socket.on('NewLogout', (message) => {
+            users.removeUser(userobj.getIdUser());
+            io.emit('updateUserConnected', users.getUsers());
+        });
+
+        // Remove the user from the list and send it to the front
+        socket.on('disconnect', () => {
+          // if not in battle remove him
+          if ((users.getUserById(userobj.idUser)).available == true) {
+              users.removeUser(userobj.getIdUser());
+              io.emit('updateUserConnected', users.getUsers());
+          }
+        });
+        // Battle socket
+        socket.on('battle', (res, callback) => {
+
+          let challenger = users.getUserBySocket(socket.id);
+          let challenged = users.getUserBySocket(res.challengedSocketId);
+
+          // Verif available & send both in play.html
+          if (challenger.invite(challenged) == true) {
+
+            // save the opponent socket
+            challenger.socketOpponent = challenged.idSocket;
+            challenged.socketOpponent = challenger.idSocket;
+
+            socket.broadcast.to(challenged.idSocket).emit('battlePage');
+            io.emit('updateUserConnected', users.getUsers());
+
+            // Wait until they are on play.html
+            setTimeout( () => {
+              io.emit('UpdateBattle', users);
+              console.log("ralentie");
+            }, 5000);
+
+            // send currrent user in play.html
+            callback();
+          }
+        })
+
+        // update the adversaire board
+        socket.on('UpdateBoard', (res) => {
+          io.emit('UpdateAdversaireBoard', res);
+        });
     }
 });
+
+// HAVE REPLACE app by server
+server.listen(port, () => console.log(`Example app listening on port ${port}!`));
