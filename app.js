@@ -39,22 +39,13 @@ let io = socketIO(server);
 
 /****** Routes *******/
 app.get('/', function(req, res){
-    var user = firebase.auth().currentUser;
-    if(!user){
-        res.sendFile('home.html', { root: __dirname + "/views/Home" } );
-    }
-    else{
-        res.redirect('/main');
-    }
+    // Retirer if else pour pouvoir connecter plusieurs utilisateur
+    res.sendFile('home.html', { root: __dirname + "/views/Home" } );
 });
 
 app.get('/register', function(req, res) {
-    if(!firebase.auth().currentUser){
-        res.render('Register/register');
-    }
-    else{
-        res.redirect('/main');
-    }
+    // Retirer if else pour pouvoir connecter plusieurs utilisateur
+    res.render('Register/register');
 });
 
 app.post('/register', async function(req, res) {
@@ -152,13 +143,8 @@ app.post('/register', async function(req, res) {
 
 /****** LOGIN *******/
 app.get('/login', function(req, res) {
-    var user = firebase.auth().currentUser;
-    if(!user){
+    // retirer if else pour pouvoir connecter plusieurs utilisateur
         res.render('Login/login');
-    }
-    else{
-        res.redirect("/main");
-    }
 });
 
 app.post('/login', async function(req, res) {
