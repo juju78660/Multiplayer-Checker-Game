@@ -116,45 +116,44 @@ function showMoves(valX, valY) {
 	//Enregistrement des coordonnées de la pièces qu'on veut déplacer
 
 	/**
-		METTRE LE IF BLANC IF NOIR ET IF TOUR
-	**/
+	 METTRE LE IF BLANC IF NOIR ET IF TOUR
+	 **/
 
 	selectedPieceX = valX;
 	selectedPieceY = valY;
 
 	// Verifie si bonne couleur & mon tour
-	if (me.color == block[selectedPieceY][selectedPieceX].id.color && me.turn == true) {
+	if (me.color === block[selectedPieceY][selectedPieceX].id.color && me.turn === true) {
 		console.log("---------------------------------\n		SHOWMOVES");
+	}
 
-
-	if (block[selectedPieceY][selectedPieceX].id.king) { //est un roi
-		colorieCase(valX, valY, "#685f5b", true);
-	} else {//est un pion
-			if(block[selectedPieceY][selectedPieceX].id.color === "white") {
+		if (block[selectedPieceY][selectedPieceX].id.king) { //est un roi
+			colorieCase(valX, valY, "#685f5b", true);
+		} else {//est un pion
+			if (block[selectedPieceY][selectedPieceX].id.color === "white") {
 				checkAllDiagonal(-1, 1);
 				checkAllDiagonal(1, 1);
 				checkAllDiagonal(-1, -1);
-				if (!LimitOfBoard(valX-1, valY-1) && block[valY-1][valX-1].ocupied === false) {
-					block[valY-1][valX-1].id.style.background = "#BA7A3A";
-					block[valY-1][valX-1].greySquare = false;
+				if (!LimitOfBoard(valX - 1, valY - 1) && block[valY - 1][valX - 1].ocupied === false) {
+					block[valY - 1][valX - 1].id.style.background = "#BA7A3A";
+					block[valY - 1][valX - 1].greySquare = false;
 				}
 				checkAllDiagonal(1, -1);
 				checkAllDiagonal(-1, -1);
-			}
-			else{
+			} else {
 				checkAllDiagonal(-1, -1);
 				checkAllDiagonal(1, -1);
 				checkAllDiagonal(-1, 1);
-				if (!LimitOfBoard(valX-1, valY+1) && block[valY+1][valX-1].ocupied === false) {
-					block[valY+1][valX-1].id.style.background = "#BA7A3A";
-					block[valY+1][valX-1].greySquare = false;
+				if (!LimitOfBoard(valX - 1, valY + 1) && block[valY + 1][valX - 1].ocupied === false) {
+					block[valY + 1][valX - 1].id.style.background = "#BA7A3A";
+					block[valY + 1][valX - 1].greySquare = false;
 				}
 				checkAllDiagonal(1, 1);
 				checkAllDiagonal(-1, 1);
 			}
 
 
-
+		}
 
 }
 
