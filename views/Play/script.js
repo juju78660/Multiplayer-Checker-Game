@@ -30,6 +30,7 @@ let boolCheckerSelected = false; 		// SI UNE PIECE EST SELECTIONNEE
 // COORDONNEE DE LA PIECE SELECTIONNEE -> SI UNE AUTRE PIECE EST DEJA SELECTIONNEE, ON DECOLORIE CETTE ANCIENNE PIECE AVEC SES COORDONNEES
 let coordX_selected_checker;
 let coordY_selected_checker;
+let listDeadChecker = [];
 
 function Point(x,y) {
 	this.x =x;
@@ -93,10 +94,11 @@ function checkAllDiagonal(depX, depY ) {
 		if (block[y][x].ocupied &&( block[y][x].id.color !== block[selectedPieceY][selectedPieceX].id.color)) {
 			x = x + depX;
 			y = y + depY;
-			if (!LimitOfBoard(x, y) && block[y][x].ocupied === false) {
+			if (!LimitOfBoard(x, y) && block[y][x].ocupied === false && block[y][x].id.alive===true) {
 				block[selectedPieceY][selectedPieceX].id.attack = true;
 				block[y][x].id.style.background = "#685f5b";
 				block[y][x].greySquare = true;
+				block[y-depY][x-depX].id.alive = false;
 			}
 		}
 		if((block[selectedPieceY][selectedPieceX].id.attack === false) && !block[y][x].ocupied) {
@@ -111,9 +113,30 @@ function checkAllDiagonal(depX, depY ) {
 	}
 }
 
+function EffacerPions (list){
+	var x ;
+	var y;
+	var i;
+	let indexChecker;
+
+	for(let point of list){
+		x= point.x;
+		y= point.y;
+		//block[y][x].id.alive=false;
+		block[y][x].ocupied = false;
+		i = returnSquareIndex(x, y);
+		block[y][x] = new square_p(square_class[i], x, y);
+		if(block[y][x].pieceId < 100 ) indexChecker =  block[y][x].pieceId;
+		else indexChecker =  block[y][x].pieceId -100;
+		black_checker_class[indexChecker].style.visibility = 'hidden';
+	}
+}
+
+
 //actif uniqument lorsqu'on appuie sur un pion
 function showMoves(valX, valY) {
 	//Enregistrement des coordonnées de la pièces qu'on veut déplacer
+
 
 	/**
 	 METTRE LE IF BLANC IF NOIR ET IF TOUR
@@ -121,6 +144,7 @@ function showMoves(valX, valY) {
 
 	selectedPieceX = valX;
 	selectedPieceY = valY;
+	console.log(block[valY][valX]);
 
 	// Verifie si bonne couleur & mon tour
 	if (me.color === block[selectedPieceY][selectedPieceX].id.color && me.turn === true) {
@@ -458,6 +482,8 @@ for (i = 16; i < 21; i++) {
 	block[4][b_checker[i].coordX].ocupied = true;
 	block[4][b_checker[i].coordX].pieceId = i + 100;
 }
+
+
 
 
 /*
