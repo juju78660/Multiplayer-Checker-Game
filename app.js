@@ -222,6 +222,7 @@ app.get('/main', function(req, res) {
     else{
         res.sendFile('Main/main.html', { root: __dirname + "/views" } );
     }
+    //res.render('main')
 });
 
 app.get('/play', function(req, res) {
@@ -242,6 +243,7 @@ app.get('/disconnect', function(req, res) {
 });
 
 let users = new Users();
+let opponent = false
 
 // the server listen for a connection
 io.on('connection', (socket) => {
@@ -257,6 +259,18 @@ io.on('connection', (socket) => {
         if (!users.getUserById(userobj.idUser)) {
             users.addUser(userobj);
             io.emit('updateUserConnected', users.getUsers());
+            console.log(users);
+        }
+        // else change his socket id & then his opponent socket id
+        else {
+          if (!opponent) {
+            users.getUserById(userobj.idUser).idSocket = socket.id;
+            opponent = true;
+          }
+          else {
+            users.getUserBySocket((users.getUserById(userobj.idUser)).socketOpponent).idSocket = socket.id;
+            opponent = false;
+          }
         }
 
         // Remove the user from the list and send it to the front
@@ -267,38 +281,59 @@ io.on('connection', (socket) => {
 
         // Remove the user from the list and send it to the front
         socket.on('disconnect', () => {
-          // if not in battle remove him
-          if ((users.getUserById(userobj.idUser)).available == true) {
-              users.removeUser(userobj.getIdUser());
-              io.emit('updateUserConnected', users.getUsers());
+          // if user exist not in battle remove him
+          if (users.getUserById(userobj.idUser)) {
+            if ((users.getUserById(userobj.idUser)).available == true) {
+                users.removeUser(userobj.getIdUser());
+                io.emit('updateUserConnected', users.getUsers());
+            }
           }
         });
-        // Battle socket
-        socket.on('battle', (res, callback) => {
+        // socket battle
+        socket.on('battle', (res) => {
 
-          let challenger = users.getUserBySocket(socket.id);
+          // recover both opponent
+          let challenger = users.getUserBySocket(res.challengerSocketId);
           let challenged = users.getUserBySocket(res.challengedSocketId);
 
           // Verif available & send both in play.html
           if (challenger.invite(challenged) == true) {
 
-            // save the opponent socket
+            // challenger take black
             challenger.socketOpponent = challenged.idSocket;
-            challenged.socketOpponent = challenger.idSocket;
+            challenger.color = "black";
 
-            socket.broadcast.to(challenged.idSocket).emit('battlePage');
-            io.emit('updateUserConnected', users.getUsers());
+            // challenged take white
+            challenged.socketOpponent = challenger.idSocket;
+            challenged.color = "white";
+            challenged.turn = true;
+
+            // Send both in play & update list
+            io.to(challenger.idSocket).emit('battlePage');
+            io.to(challenged.idSocket).emit('battlePage');
 
             // Wait until they are on play.html
             setTimeout( () => {
-              io.emit('UpdateBattle', users);
-              console.log("ralentie");
+              io.emit('UpdateBattle', {
+                challenger: challenger,
+                challenged: challenged
+              });
             }, 5000);
 
             // send currrent user in play.html
-            callback();
+            //callback();
           }
-        })
+        });
+
+        // Pass my turn & opponent turn
+        socket.on('PassTurn', (res) => {
+          res.me.turn = false;
+          res.opponent.turn = true;
+          io.emit('UpdateBattle', {
+            challenger: res.me,
+            challenged: res.opponent
+          });
+        });
 
         // update the adversaire board
         socket.on('UpdateBoard', (res) => {

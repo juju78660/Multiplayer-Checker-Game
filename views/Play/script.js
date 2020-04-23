@@ -26,7 +26,10 @@ const b_checker = [];
 //let anotherMove;
 //const mustAttack = false;
 
-let boolCheckerSelected = false;
+let boolCheckerSelected = false; 		// SI UNE PIECE EST SELECTIONNEE
+// COORDONNEE DE LA PIECE SELECTIONNEE -> SI UNE AUTRE PIECE EST DEJA SELECTIONNEE, ON DECOLORIE CETTE ANCIENNE PIECE AVEC SES COORDONNEES
+let coordX_selected_checker;
+let coordY_selected_checker;
 
 function Point(x,y) {
 	this.x =x;
@@ -111,9 +114,17 @@ function checkAllDiagonal(depX, depY ) {
 //actif uniqument lorsqu'on appuie sur un pion
 function showMoves(valX, valY) {
 	//Enregistrement des coordonnées de la pièces qu'on veut déplacer
+
+	/**
+		METTRE LE IF BLANC IF NOIR ET IF TOUR
+	**/
+
 	selectedPieceX = valX;
 	selectedPieceY = valY;
-	console.log("---------------------------------\n		SHOWMOVES");
+
+	// Verifie si bonne couleur & mon tour
+	if (me.color == block[selectedPieceY][selectedPieceX].id.color && me.turn == true) {
+		console.log("---------------------------------\n		SHOWMOVES");
 
 
 	if (block[selectedPieceY][selectedPieceX].id.king) { //est un roi
@@ -142,9 +153,8 @@ function showMoves(valX, valY) {
 				checkAllDiagonal(-1, 1);
 			}
 
-	}
 
-// TODO : régler problème de case crisés en trop, enregistrer dans liste le pion qu'on mange
+
 
 }
 
@@ -161,8 +171,14 @@ var checker = function (piece, color, valX, valY, boolKing) {
 
 	//Actif uniquement lorsqu'on appuie sur un pion
 	this.id.onclick = function  () {
+		if(boolCheckerSelected){ // SI UN PION ETAIT DEJA SELECTIONNE -> ON DE-COLORIE CES CASES
+			colorieCase(coordX_selected_checker, coordY_selected_checker, "#BA7A3A", false);
+		}
 		boolCheckerSelected = true;
+		coordX_selected_checker = valX;
+		coordY_selected_checker = valY;
 		showMoves(valX, valY);
+
 	}
 };
 
@@ -207,6 +223,12 @@ function makeMove(indexX,indexY) {
 		piece_id: block[selectedPieceY][selectedPieceX].pieceId
 	});
 
+	// Pass my turn & opponent turn
+	socket.emit('PassTurn', {
+		me: me,
+		opponent: opponent
+	});
+
 	console.log(block[selectedPieceY][selectedPieceX]);
 	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square], selectedPieceX, selectedPieceY);
 
@@ -241,8 +263,59 @@ function makeMove(indexX,indexY) {
 	selectedPieceY = 0;
 	selectedPieceX = 0;
 	boolCheckerSelected = false;
-
+	verifieFinJeu()
 }
+
+function verifieFinJeu() {
+	var nb_pions_blanc_vivant = 0;
+	var nb_pions_noir_vivant = 0;
+	console.log("ICI{");
+	for(var i in w_checker)
+	{
+		//console.log(w_checker[i]);
+	}
+	console.log("}ICI");
+	// PLUS DE PIECES D'UN JOUEUR
+
+	// EGALITE SI LE MEME MOUVEMENT SE REPRODUIT 3 FOIS AVEC LE MEME JOUEUR AYANT LA MEME POSSIBILITE DE MOUVEMENT (PAS FORCEMENT CONSECUTIF)
+
+	// EGALITE SI UN SEUL ROI CONTRE UN SEUL ROI
+
+	// SI EN 25 MOUV, AUCUNE PIECE N'EST DEPLACEE OU MANGEE
+
+	// SI COMBAT (3 ROI/2 ROI + 1 PIECE/1 ROI + 2 PIECE) CONTRE 1 ROI
+	return false;
+}
+
+function victory(joueur_gagnant) {
+	var nb_pions_blanc_vivant = 0;
+	var nb_pions_noir_vivant = 0;
+	for(var i in w_checker)
+	{
+		if(w_checker[i].alive == true){
+			nb_pions_blanc_vivant++;
+		}
+	}
+	console.log("ICI" + nb_pions_blanc_vivant);
+	for(var i in b_checker)
+	{
+		if(b_checker[i].alive == true){
+			nb_pions_noir_vivant++;
+		}
+	}
+	console.log("ICI" + nb_pions_blanc_vivant);
+	// PLUS DE PIECES D'UN JOUEUR
+
+	// EGALITE SI LE MEME MOUVEMENT SE REPRODUIT 3 FOIS AVEC LE MEME JOUEUR AYANT LA MEME POSSIBILITE DE MOUVEMENT (PAS FORCEMENT CONSECUTIF)
+
+	// EGALITE SI UN SEUL ROI CONTRE UN SEUL ROI
+
+	// SI EN 25 MOUV, AUCUNE PIECE N'EST DEPLACEE OU MANGEE
+
+	// SI COMBAT (3 ROI/2 ROI + 1 PIECE/1 ROI + 2 PIECE) CONTRE 1 ROI
+	return false;
+}
+
 //Classe de création des carrés
 //voir plus bas comment est utilisé
 var square_p = function (square, indeX, indeY) {
@@ -253,8 +326,12 @@ var square_p = function (square, indeX, indeY) {
 	this.id.onclick = function () {
 
 		if (boolCheckerSelected && block[indeY][indeX].greySquare) makeMove(indeX, indeY);
-		else {
-			console.log("No checker selected before");
+		else if (boolCheckerSelected && !block[indeY][indeX].greySquare){ // SI UNE PIECE EST SELECTIONNEE
+			console.log("Mouvement impossible");
+			colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+		}
+		else{
+			console.log("Aucune pièce n'est selectionnée");
 			colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 		}
 	}

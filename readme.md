@@ -4,24 +4,24 @@ Web app using Node Js and Express to play checker game in multiplayers
 
 ## Installation
 
-Install node JS 
+Install node JS
 ```
 https://nodejs.org/en/download/package-manager/
 ```
 
-Install express 
+Install express
 ```
 https://expressjs.com/
 ```
 
 ## Run the App
 
-Add the firebase dependencie 
+Add the firebase dependencie
 ```
 npm install --save firebase
 ```
 
-Add env dependencie to hide the api key connection to firebase : 
+Add env dependencie to hide the api key connection to firebase :
 ```
 npm install dotenv
 ```
@@ -30,6 +30,11 @@ Add socket.io dependencie
 
 ```
 npm install socket.io
+```
+
+Add nunjuck dependencie
+```
+npm install nunjuck
 ```
 
 Add a file .env at the roor of the project with a variable FIREBASE_CONFIG with the api key

@@ -1,14 +1,3 @@
-let socket = io();
-
-// socket connection cote client
-socket.on('connect', function () {
-    console.log("connected client side");
-    });
-
-// socket deconnection cote client
-socket.on('disconnect', function () {
-    console.log("disconected client side");
-    });
 
 // Recuperation du bouton logout et creation de sa socket
 const logout = document.getElementById('btn_logout');
@@ -19,7 +8,7 @@ socket.on("updateUserConnected", function (users) {
 
     let ol = document.createElement('ol');
     console.log(users);
-    
+
     // for each user create elem with name and button
     users.forEach(function (user) {
         let li = document.createElement('li');
@@ -32,10 +21,11 @@ socket.on("updateUserConnected", function (users) {
         btn.innerHTML = "Battle";
         btn.setAttribute("class", "btn btn-dark");
         btn.addEventListener('click', function () {
-            socket.emit('battle', { challengedSocketId: user.idSocket}, function () {
-                location.href = '/play.html';
-            });
-        })
+          socket.emit('battle', {
+            challengedSocketId: user.idSocket,
+            challengerSocketId: socket.id
+          });
+        });
         ol.appendChild(btn);
     });
     // append to front div
