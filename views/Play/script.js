@@ -28,7 +28,16 @@ const b_checker = [];
 
 let boolCheckerSelected = false;
 
-function checkPosition(x, y) {
+function Point(x,y) {
+	this.x =x;
+	this.y = y;
+
+}
+
+/**
+ * @return {boolean}
+ */
+function LimitOfBoard(x, y) {
 	return x === 0 || x === 11 || y === 0 || y === 11;
 }
 
@@ -38,7 +47,7 @@ function colorieCase(valX, valY, couleur, bool) {
 	while (!(x === 1)) {
 		x--;
 		y--;
-		if (checkPosition(x, y) || block[y][x].ocupied) break;
+		if (LimitOfBoard(x, y) || block[y][x].ocupied) break;
 		block[y][x].id.style.background = couleur;
 		block[y][x].greySquare = bool;
 	}
@@ -47,7 +56,7 @@ function colorieCase(valX, valY, couleur, bool) {
 	while (true) {
 		x++;
 		y++;
-		if (checkPosition(x, y) || block[y][x].ocupied) break;
+		if (LimitOfBoard(x, y) || block[y][x].ocupied) break;
 		block[y][x].id.style.background = couleur;
 		block[y][x].greySquare = bool;
 	}
@@ -56,7 +65,7 @@ function colorieCase(valX, valY, couleur, bool) {
 	while (true) {
 		x--;
 		y++;
-		if (checkPosition(x, y) || block[y][x].ocupied) break;
+		if (LimitOfBoard(x, y) || block[y][x].ocupied) break;
 		block[y][x].id.style.background = couleur;
 		block[y][x].greySquare = bool;
 	}
@@ -65,28 +74,38 @@ function colorieCase(valX, valY, couleur, bool) {
 	while (true) {
 		x++;
 		y--;
-		if (checkPosition(x, y) || block[y][x].ocupied) break;
+		if (LimitOfBoard(x, y) || block[y][x].ocupied) break;
 		block[y][x].id.style.background = couleur;
 		block[y][x].greySquare = bool;
 	}
 }
 
-function checkAttack(valX, valY) {
-	let x = valX;
-	let y = valY;
-	while (true) {
-		x++;
-		y++;
-		if (checkPosition(x, y)) break;
-		if (block[y][x].ocupied && !block[y++][x++].ocupied) {
-			console.log("ici");
-			block[y][x].id.style.background = "#685f5b";
-			block[y][x].greySquare = true;
-			return true;
+function checkAllDiagonal(depX, depY ) {
+	let x= selectedPieceX +depX;
+	let y = selectedPieceY +depY;
 
+
+	if (!LimitOfBoard(x, y)) {
+
+		if (block[y][x].ocupied &&( block[y][x].id.color !== block[selectedPieceY][selectedPieceX].id.color)) {
+			x = x + depX;
+			y = y + depY;
+			if (!LimitOfBoard(x, y) && block[y][x].ocupied === false) {
+				block[selectedPieceY][selectedPieceX].id.attack = true;
+				block[y][x].id.style.background = "#685f5b";
+				block[y][x].greySquare = true;
+			}
+		}
+		if((block[selectedPieceY][selectedPieceX].id.attack === false) && !block[y][x].ocupied) {
+			if (depY === -1 && block[selectedPieceY][selectedPieceX].id.color === "white") {
+				block[y][x].id.style.background = "#685f5b";
+				block[y][x].greySquare = true;
+			} else if (depY === 1 && block[selectedPieceY][selectedPieceX].id.color === "black") {
+				block[y][x].id.style.background = "#685f5b";
+				block[y][x].greySquare = true;
+			}
 		}
 	}
-	return false;
 }
 
 //actif uniqument lorsqu'on appuie sur un pion
@@ -96,26 +115,36 @@ function showMoves(valX, valY) {
 	selectedPieceY = valY;
 	console.log("---------------------------------\n		SHOWMOVES");
 
+
 	if (block[selectedPieceY][selectedPieceX].id.king) { //est un roi
 		colorieCase(valX, valY, "#685f5b", true);
 	} else {//est un pion
-
-		//	if(checkAttack(valX,valY)){console.log("true");}
-		//
-		colorieCase(valX, valY, "#685f5b", true);
+			if(block[selectedPieceY][selectedPieceX].id.color === "white") {
+				checkAllDiagonal(-1, 1);
+				checkAllDiagonal(1, 1);
+				checkAllDiagonal(-1, -1);
+				if (!LimitOfBoard(valX-1, valY-1) && block[valY-1][valX-1].ocupied === false) {
+					block[valY-1][valX-1].id.style.background = "#BA7A3A";
+					block[valY-1][valX-1].greySquare = false;
+				}
+				checkAllDiagonal(1, -1);
+				checkAllDiagonal(-1, -1);
+			}
+			else{
+				checkAllDiagonal(-1, -1);
+				checkAllDiagonal(1, -1);
+				checkAllDiagonal(-1, 1);
+				if (!LimitOfBoard(valX-1, valY+1) && block[valY+1][valX-1].ocupied === false) {
+					block[valY+1][valX-1].id.style.background = "#BA7A3A";
+					block[valY+1][valX-1].greySquare = false;
+				}
+				checkAllDiagonal(1, 1);
+				checkAllDiagonal(-1, 1);
+			}
 
 	}
 
-	for (i = 1; i < 11; i++) {
-
-		for (i = 1; i < 10; i++) {
-			console.log(i);
-			console.log(block[j][i].greySquare);
-		}
-	}
-
-
-
+// TODO : régler problème de case crisés en trop, enregistrer dans liste le pion qu'on mange
 
 }
 
@@ -151,7 +180,7 @@ function returnSquareIndex(x, y) {
 //Puis appuyer sur une case vide alors le pion se déplace
 // LES PIONS NOIR DEMARRENT A L'INDICE 100 -> IL FAUT FAIRE checkerIndex-100 POUR ACCEDER A LA PIECE DANS LA TABLEAU DES PIONS
 function makeMove(indexX,indexY) {
-
+	block[selectedPieceY][selectedPieceY].id.attack = false;
 	colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 	let startBlock = block[selectedPieceY][selectedPieceX]; // BLOC DE DEPART
 	const destinationBlock = block[indexY][indexX];           // BLOC D'ARRIVEE
