@@ -94,11 +94,13 @@ function checkAllDiagonal(depX, depY ) {
 		if (block[y][x].ocupied &&( block[y][x].id.color !== block[selectedPieceY][selectedPieceX].id.color)) {
 			x = x + depX;
 			y = y + depY;
-			if (!LimitOfBoard(x, y) && block[y][x].ocupied === false && block[y][x].id.alive===true) {
+			if (!LimitOfBoard(x, y) && block[y][x].ocupied === false && block[y-depY][x-depX].id.alive===true) {
+
 				block[selectedPieceY][selectedPieceX].id.attack = true;
 				block[y][x].id.style.background = "#685f5b";
 				block[y][x].greySquare = true;
 				block[y-depY][x-depX].id.alive = false;
+
 			}
 		}
 		if((block[selectedPieceY][selectedPieceX].id.attack === false) && !block[y][x].ocupied) {
@@ -144,12 +146,11 @@ function showMoves(valX, valY) {
 
 	selectedPieceX = valX;
 	selectedPieceY = valY;
-	console.log(block[valY][valX]);
 
 	// Verifie si bonne couleur & mon tour
 	if (me.color === block[selectedPieceY][selectedPieceX].id.color && me.turn === true) {
 		console.log("---------------------------------\n		SHOWMOVES");
-	}
+
 
 		if (block[selectedPieceY][selectedPieceX].id.king) { //est un roi
 			colorieCase(valX, valY, "#685f5b", true);
@@ -178,7 +179,7 @@ function showMoves(valX, valY) {
 
 
 		}
-
+	}
 }
 
 //class d'un pion
@@ -219,7 +220,10 @@ function returnSquareIndex(x, y) {
 //Puis appuyer sur une case vide alors le pion se déplace
 // LES PIONS NOIR DEMARRENT A L'INDICE 100 -> IL FAUT FAIRE checkerIndex-100 POUR ACCEDER A LA PIECE DANS LA TABLEAU DES PIONS
 function makeMove(indexX,indexY) {
-	block[selectedPieceY][selectedPieceY].id.attack = false;
+	if (block[selectedPieceY][selectedPieceY].id.attack === true)
+		listDeadChecker.push(new Point(indexX,indexY));
+
+	console.log(listDeadChecker);
 	colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 	let startBlock = block[selectedPieceY][selectedPieceX]; // BLOC DE DEPART
 	const destinationBlock = block[indexY][indexX];           // BLOC D'ARRIVEE
@@ -252,7 +256,7 @@ function makeMove(indexX,indexY) {
 		opponent: opponent
 	});
 
-	console.log(block[selectedPieceY][selectedPieceX]);
+	console.log(block[selectedPieceY][selectedPieceX].id);
 	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square], selectedPieceX, selectedPieceY);
 
 	//block[1][3].id.style.background = "#41BA3E";
@@ -292,12 +296,12 @@ function makeMove(indexX,indexY) {
 function verifieFinJeu() {
 	var nb_pions_blanc_vivant = 0;
 	var nb_pions_noir_vivant = 0;
-	console.log("ICI{");
+	//console.log("ICI{");
 	for(var i in w_checker)
 	{
 		//console.log(w_checker[i]);
 	}
-	console.log("}ICI");
+	//console.log("}ICI");
 	// PLUS DE PIECES D'UN JOUEUR
 
 	// EGALITE SI LE MEME MOUVEMENT SE REPRODUIT 3 FOIS AVEC LE MEME JOUEUR AYANT LA MEME POSSIBILITE DE MOUVEMENT (PAS FORCEMENT CONSECUTIF)

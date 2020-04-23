@@ -5,7 +5,7 @@ let opponent;
 socket.on("UpdateAdversaireBoard", (res) => {
 	block[res.start_cordy][res.start_cordx] = new square_p(square_class[returnSquareIndex(res.start_cordx, res.start_cordy)], res.start_cordx, res.start_cordy);
 
-	console.log(me);
+	//console.log(me);
 	if (res.piece_id < 100) {
 		w_checker[res.piece_id] = new checker(white_checker_class[res.piece_id], "white", res.dest_x, res.dest_y, w_checker[res.piece_id].king);
 		w_checker[res.piece_id].setCoord(res.dest_x, res.dest_y);
@@ -37,4 +37,6 @@ socket.on("UpdateBattle", function (res) {
 		me = res.challenger;
 		opponent = res.challenged;
 	}
+	if(me.turn) document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " - C'est votre tour!";
+	else document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " - C'est au tour de l'ennemi!";
 });
