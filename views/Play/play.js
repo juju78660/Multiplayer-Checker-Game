@@ -29,6 +29,7 @@ socket.on("UpdateAdversaireBoard", (res) => {
 
 // recover both user
 socket.on("UpdateBattle", function (res) {
+	console.log(res);
 	if (res.challenged.idSocket == socket.id) {
 		me = res.challenged;
 		opponent = res.challenger;

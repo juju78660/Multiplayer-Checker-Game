@@ -243,6 +243,7 @@ app.get('/disconnect', function(req, res) {
 });
 
 let users = new Users();
+let inBattle = [];
 let opponent = false
 
 // the server listen for a connection
@@ -252,39 +253,41 @@ io.on('connection', (socket) => {
 
     if (user) {
 
-        // Create userobj and add to users
         let userobj = new userObj(socket.id, user.uid, user.displayName);
 
         // if not already in the list add him & send the update list
         if (!users.getUserById(userobj.idUser)) {
-            users.addUser(userobj);
-            io.emit('updateUserConnected', users.getUsers());
-            console.log(users);
+          users.addUser(userobj);
+          io.emit('updateUserConnected', users.getUsers());
         }
-        // else change his socket id & then his opponent socket id
-        else {
+
+        // if user in battle update their socket id
+        if (inBattle.length != 0) {
           if (!opponent) {
-            users.getUserById(userobj.idUser).idSocket = socket.id;
+            let challenger = inBattle.shift();
+            users.getUserById(challenger.idUser).idSocket = socket.id;
             opponent = true;
           }
           else {
-            users.getUserBySocket((users.getUserById(userobj.idUser)).socketOpponent).idSocket = socket.id;
+            let challenged = inBattle.shift();
+            users.getUserById(challenged.idUser).idSocket = socket.id;
             opponent = false;
+            inBattle = [];
           }
         }
 
         // Remove the user from the list and send it to the front
         socket.on('NewLogout', (message) => {
-            users.removeUser(userobj.getIdUser());
-            io.emit('updateUserConnected', users.getUsers());
+          users.removeUser(socket.id);
+          io.emit('updateUserConnected', users.getUsers());
         });
 
         // Remove the user from the list and send it to the front
         socket.on('disconnect', () => {
           // if user exist not in battle remove him
-          if (users.getUserById(userobj.idUser)) {
-            if ((users.getUserById(userobj.idUser)).available == true) {
-                users.removeUser(userobj.getIdUser());
+          if (users.getUserBySocket(socket.id)) {
+            if ((users.getUserBySocket(socket.id)).available == true) {
+                users.removeUser(socket.id);
                 io.emit('updateUserConnected', users.getUsers());
             }
           }
@@ -308,20 +311,25 @@ io.on('connection', (socket) => {
             challenged.color = "white";
             challenged.turn = true;
 
+            // Add them in list inBattle
+            inBattle.push(challenger);
+            inBattle.push(challenged);
+
             // Send both in play & update list
             io.to(challenger.idSocket).emit('battlePage');
             io.to(challenged.idSocket).emit('battlePage');
 
             // Wait until they are on play.html
             setTimeout( () => {
-              io.emit('UpdateBattle', {
+              io.to(challenger.idSocket).emit('UpdateBattle', {
+                challenger: challenger,
+                challenged: challenged
+              });
+              io.to(challenged.idSocket).emit('UpdateBattle', {
                 challenger: challenger,
                 challenged: challenged
               });
             }, 5000);
-
-            // send currrent user in play.html
-            //callback();
           }
         });
 
@@ -329,15 +337,13 @@ io.on('connection', (socket) => {
         socket.on('PassTurn', (res) => {
           res.me.turn = false;
           res.opponent.turn = true;
-          io.emit('UpdateBattle', {
-            challenger: res.me,
-            challenged: res.opponent
-          });
+          socket.broadcast.to(res.me.idSocket).emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
+          socket.broadcast.to(res.opponent.idSocket).emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
         });
 
         // update the adversaire board
         socket.on('UpdateBoard', (res) => {
-          io.emit('UpdateAdversaireBoard', res);
+          socket.broadcast.to(res.opponent.idSocket).emit('UpdateAdversaireBoard', res);
         });
     }
 });

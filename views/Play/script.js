@@ -149,7 +149,7 @@ function showMoves(valX, valY) {
 	// Verifie si bonne couleur & mon tour
 	if (me.color === block[selectedPieceY][selectedPieceX].id.color && me.turn === true) {
 		console.log("---------------------------------\n		SHOWMOVES");
-	}
+
 
 		if (block[selectedPieceY][selectedPieceX].id.king) { //est un roi
 			colorieCase(valX, valY, "#685f5b", true);
@@ -178,7 +178,7 @@ function showMoves(valX, valY) {
 
 
 		}
-
+	}
 }
 
 //class d'un pion
@@ -243,7 +243,8 @@ function makeMove(indexX,indexY) {
 		start_cordy: selectedPieceY,
 		dest_x: indexX,
 		dest_y: indexY,
-		piece_id: block[selectedPieceY][selectedPieceX].pieceId
+		piece_id: block[selectedPieceY][selectedPieceX].pieceId,
+		opponent: opponent
 	});
 
 	// Pass my turn & opponent turn

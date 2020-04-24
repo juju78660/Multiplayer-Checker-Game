@@ -1,7 +1,7 @@
 // List contenant tous les utilisateur
 
 class Users {
-    
+
     constructor () {
         this.users = [];
     }
@@ -21,15 +21,15 @@ class Users {
     }
 
     /**
-     * 
+     *
      * @param {String} id
-     * @returns Users removed 
+     * @returns Users removed
      */
-    removeUser(idUser) {
-        let user = this.getUserById(idUser);
+    removeUser(idSocket) {
+        let user = this.getUserBySocket(idSocket);
 
         if (user) {
-            this.users = this.users.filter((user) => user.getIdUser() !== idUser);
+            this.users = this.users.filter((user) => user.idSocket !== idSocket);
         }
         return user;
     }
