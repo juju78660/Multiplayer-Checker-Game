@@ -335,9 +335,10 @@ io.on('connection', (socket) => {
 
         // Pass my turn & opponent turn
         socket.on('PassTurn', (res) => {
+          console.log(res);
           res.me.turn = false;
           res.opponent.turn = true;
-          socket.broadcast.to(res.me.idSocket).emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
+          socket.emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
           socket.broadcast.to(res.opponent.idSocket).emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
         });
 
