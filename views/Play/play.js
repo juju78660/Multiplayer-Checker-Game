@@ -41,3 +41,22 @@ socket.on("UpdateBattle", function (res) {
 	if(me.turn) document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " - C'est votre tour!";
 	else document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " - C'est au tour de l'ennemi!";
 });
+
+document.getElementById('giveUpButton').addEventListener('click', function () {
+	if (confirm("Etes-vous sûr de vouloir abandonner la partie?")) {
+		document.getElementById('table').remove(); // EFFACE ECHEQUIER
+		document.getElementById('giveUpButton').remove(); // EFFACE LE BOUTON ABANDON
+		document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "VOUS AVEZ PERDU LA PARTIE PAR ABANDON";
+		socket.emit("GiveUpRequest", opponent.idSocket);
+	} else {
+		console.log("ANNULATION DEMANDE ABANDON");
+	}
+});
+
+// end game by give up
+socket.on("GiveUpRequest", function (res) {
+	document.getElementById('table').remove(); // EFFACE ECHEQUIER
+	document.getElementById('giveUpButton').remove(); // EFFACE LE BOUTON ABANDON
+	document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "VOUS AVEZ GAGNE LA PARTIE PAR ABANDON DE L'ADVERSAIRE";
+	// AJOUTER CODE POUR FINIR LA PARTIE
+});

@@ -13,7 +13,7 @@ socket.on("updateUserConnected", function (users) {
     while (tableau.firstChild) {
         tableau.removeChild(tableau.firstChild);
     }
-
+    console.log(users);
     // for each user create elem with name and button
     users.forEach(function (user) {
         if(user.username !== usernameValue) {

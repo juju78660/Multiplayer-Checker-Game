@@ -158,7 +158,6 @@ app.post('/login', async function(req, res) {
                 if (user && firstStateChange) {
                     firstStateChange = false;
                     res.redirect("/main");
-                    //res.render('Main/main', {  user: user });
                 }
             });
         })
@@ -222,7 +221,6 @@ app.get('/main', function(req, res) {
     }
     else{
         res.render('Main/main', {  user: user });
-        //res.sendFile('Main/main.html', { root: __dirname + "/views" } );
     }
 });
 
@@ -351,6 +349,11 @@ io.on('connection', (socket) => {
         // update the adversaire board
         socket.on('UpdateBoard', (res) => {
           socket.broadcast.to(res.opponent.idSocket).emit('UpdateAdversaireBoard', res);
+        });
+
+        // end the game by give up
+        socket.on('GiveUpRequest', (res) => {
+            socket.broadcast.to(res).emit('GiveUpRequest', res);
         });
     }
 });
