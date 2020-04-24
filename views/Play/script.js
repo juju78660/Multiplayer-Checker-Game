@@ -202,7 +202,6 @@ var checker = function (piece, color, valX, valY, boolKing) {
 		coordX_selected_checker = valX;
 		coordY_selected_checker = valY;
 		showMoves(valX, valY);
-
 	}
 };
 
