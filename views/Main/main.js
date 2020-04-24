@@ -6,35 +6,35 @@ logout.addEventListener('click', function () {socket.emit('NewLogout');});
 // socket when new user connecte
 socket.on("updateUserConnected", function (users) {
 
-    let ol = document.createElement('ol');
     console.log(users);
 
+    var tableau = document.getElementById("tableau");
+    while (tableau.firstChild) {
+        tableau.removeChild(tableau.firstChild);
+    }
     // for each user create elem with name and button
     users.forEach(function (user) {
-        let li = document.createElement('li');
-        let btn = document.createElement('button');
+        console.log(user);
+        var ligne = tableau.insertRow(-1); // AJOUT LIGNE
 
-        li.innerHTML = user.username;
-        ol.appendChild(li);
+        var colonne1 = ligne.insertCell(0);
+        colonne1.innerHTML = user.username;
+        var btn = document.createElement("BUTTON");
+        var colonne2 = ligne.insertCell(1);
 
-        // Add click battle event
         btn.innerHTML = "Battle";
         btn.setAttribute("class", "btn btn-dark");
         btn.addEventListener('click', function () {
-          socket.emit('battle', {
-            challengedSocketId: user.idSocket,
-            challengerSocketId: socket.id
-          });
+            socket.emit('battle', {
+                challengedSocketId: user.idSocket,
+                challengerSocketId: socket.id
+            });
         });
-        ol.appendChild(btn);
+        colonne2.appendChild(btn);
     });
-    // append to front div
-    let userList = document.querySelector("#users");
-    userList.innerHTML = "";
-    userList.appendChild(ol);
-})
+});
 
 // Redirect opponent to play
 socket.on("battlePage", function () {
-    location.href = '/play.html';
+    location.href = '/play';
 });
