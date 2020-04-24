@@ -157,7 +157,8 @@ app.post('/login', async function(req, res) {
             firebase.auth().onAuthStateChanged(function(user) {
                 if (user && firstStateChange) {
                     firstStateChange = false;
-                    res.render('Main/main', {  user: user });
+                    res.redirect("/main");
+                    //res.render('Main/main', {  user: user });
                 }
             });
         })
@@ -220,15 +221,20 @@ app.get('/main', function(req, res) {
         res.redirect('/login');
     }
     else{
-        res.sendFile('Main/main.html', { root: __dirname + "/views" } );
+        res.render('Main/main', {  user: user });
+        //res.sendFile('Main/main.html', { root: __dirname + "/views" } );
     }
-    //res.render('main')
 });
 
 app.get('/play', function(req, res) {
-    if(!firebase.auth().currentUser){
+    var user = firebase.auth().currentUser
+    if(!user){
         res.redirect('/login');
     }
+    /*else if(users.getUserById(user.uid).available){
+        res.redirect('/main');
+        console.log("PAS EN BATAILLE");
+    }*/
     else{
         res.sendFile('Play/play.html', { root: __dirname + "/views" } );
     }
@@ -337,7 +343,7 @@ io.on('connection', (socket) => {
         socket.on('PassTurn', (res) => {
           res.me.turn = false;
           res.opponent.turn = true;
-          socket.broadcast.to(res.me.idSocket).emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
+          socket.emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
           socket.broadcast.to(res.opponent.idSocket).emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
         });
 
