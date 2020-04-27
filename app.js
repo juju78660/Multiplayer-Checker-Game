@@ -226,7 +226,7 @@ app.get('/main', function(req, res) {
 });
 
 app.get('/play', function(req, res) {
-    var user = firebase.auth().currentUser
+    var user = firebase.auth().currentUser;
     if(!user){
         res.redirect('/login');
     }
@@ -409,10 +409,15 @@ io.on('connection', (socket) => {
         });
 
         // update the adversaire board
-        socket.on('UpdateBoard', (res) => {
-          socket.broadcast.to(res.opponent.idSocket).emit('UpdateAdversaireBoard', res);
+        socket.on('UpdateBoardMvt', (res) => {
+          socket.broadcast.to(res.opponent.idSocket).emit('UpdateBoardMvt', res);
         });
 
+        //update opponent board delete
+        socket.on('UpdapteBoardDelete', (res) => {
+            socket.broadcast.to(res.opponentSocket).emit('UpdapteBoardDelete',res);
+            console.log(res.opponentSocket);
+        });
     }
 });
 

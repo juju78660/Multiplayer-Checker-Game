@@ -50,6 +50,7 @@ const checker = function (piece, color, valX, valY) {
 		boolCheckerSelected = true;
 		selectedPieceX = valX;
 		selectedPieceY = valY;
+		listPossibleChecker = [];
 		showMoves(valX, valY);
 
 	}
@@ -549,12 +550,13 @@ function makeMove(indexX,indexY) {
 	let index_selected_square = returnSquareIndex(selectedPieceX, selectedPieceY);
 
 	// update adversaire board
-	socket.emit('UpdateBoardMouvement', {
+	socket.emit('UpdateBoardMvt', {
 		start_cordx: selectedPieceX,
 		start_cordy: selectedPieceY,
 		dest_x: indexX,
 		dest_y: indexY,
-		piece_id: block[selectedPieceY][selectedPieceX].pieceId
+		piece_id: block[selectedPieceY][selectedPieceX].pieceId,
+		opponent: opponent
 	});
 
 

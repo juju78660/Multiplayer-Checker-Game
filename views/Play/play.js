@@ -2,7 +2,7 @@ let me;
 let opponent;
 
 // socket when opponent moove
-socket.on("UpdateAdversaireBoard", (res) => {
+socket.on("UpdateBoardMvt", (res) => {
 	block[res.start_cordy][res.start_cordx] = new square_p(square_class[returnSquareIndex(res.start_cordx, res.start_cordy)], res.start_cordx, res.start_cordy);
 
 	//console.log(me);
