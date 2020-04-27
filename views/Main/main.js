@@ -7,7 +7,6 @@ logout.addEventListener('click', function () {socket.emit('NewLogout');});
 // socket when new user connecte
 socket.on("updateUserConnected", function (users, dbUsers) {
     console.log(users);
-
     var usernameValue = document.getElementById("username").firstChild.firstChild.nodeValue; // RECUPERATION USERNAME DANS HTML
     var tableau = document.getElementById("tableau");
 

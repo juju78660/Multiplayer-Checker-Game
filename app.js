@@ -45,7 +45,6 @@ app.get('/', function(req, res){
 });
 
 app.get('/register', function(req, res) {
-    console.log("GET REGISTER");
     // Retirer if else pour pouvoir connecter plusieurs utilisateur
     res.render('Register/register');
 });
@@ -53,7 +52,6 @@ app.get('/register', function(req, res) {
 var boolDejaConnecte = false;
 app.post('/register', async function(req, res) {
     boolDejaConnecte = false;
-    console.log("POST REGISTER");
     var firstStateChange = true;
 
     var username = req.body.username;
@@ -145,7 +143,6 @@ app.post('/register', async function(req, res) {
 
 /****** LOGIN *******/
 app.get('/login', function(req, res) {
-    console.log("GET LOGIN");
     // retirer if else pour pouvoir connecter plusieurs utilisateur
     res.render('Login/login');
 });
@@ -267,6 +264,8 @@ io.on('connection', (socket) => {
         // RECUPERATION DONNES UTILISATEUR EN BD
         db.collection("users").get()
             .then(function(querySnapshot) {
+                console.log('updateUserConnected recup BD');
+                //console.log(users);
                 if (!querySnapshot.empty) {
                     querySnapshot.docs.map(function (documentSnapshot) {
                         dbUsers.set(documentSnapshot.data().username, [documentSnapshot.data().username, documentSnapshot.data().lost, documentSnapshot.data().win]);
@@ -277,17 +276,21 @@ io.on('connection', (socket) => {
                 // if not already in the list add him & send the update list
                 if (!users.getUserById(userobj.idUser)) {
                     users.addUser(userobj);
+                    console.log('updateUserConnected');
                     io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
                 }
 
                 // Remove the user from the list and send it to the front
                 socket.on('NewLogout', (message) => {
                     users.removeUser(socket.id);
+                    console.log('NewLogout');
+                    console.log(users);
                     io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
                 });
 
                 // Remove the user from the list and send it to the front
                 socket.on('disconnect', () => {
+                    console.log('disconnect');
                     // if user exist not in battle remove him
                     if (users.getUserBySocket(socket.id)) {
                         if ((users.getUserBySocket(socket.id)).available == true) {
@@ -295,6 +298,27 @@ io.on('connection', (socket) => {
                             io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
                         }
                     }
+                });
+
+                // end the game by give up
+                socket.on('GiveUpRequest', (res) => {
+                    socket.broadcast.to(res).emit('GiveUpRequest', res);
+                    setTimeout( () => {
+                        io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
+                        console.log("Update liste utilisateurs apres giveIp");
+                    }, 10000);
+                    /*
+                    // INCREMENTATION
+                    const increment = firebase.firestore.FieldValue.increment(1);
+                    db.collection("users").doc(user.displayName).update({
+                        win: increment
+                    })
+                        .then(function() {
+                            console.log("INCREMENTATION REUSSIE")
+                        })
+                        .catch(function(error) {
+                            console.error("Error incrementing victory of user " +  user.displayName + ": ", error.message);
+                        });*/
                 });
             });
 
@@ -369,25 +393,6 @@ io.on('connection', (socket) => {
           socket.broadcast.to(res.opponent.idSocket).emit('UpdateAdversaireBoard', res);
         });
 
-        // end the game by give up
-        socket.on('GiveUpRequest', (res) => {
-            socket.broadcast.to(res).emit('GiveUpRequest', res);
-            console.log(res.username + " gagne !\n");
-            console.log("PERD:");
-            console.log(res.socketOpponent);
-            /*
-            // INCREMENTATION
-            const increment = firebase.firestore.FieldValue.increment(1);
-            db.collection("users").doc(user.displayName).update({
-                win: increment
-            })
-                .then(function() {
-                    console.log("INCREMENTATION REUSSIE")
-                })
-                .catch(function(error) {
-                    console.error("Error incrementing victory of user " +  user.displayName + ": ", error.message);
-                });*/
-        });
     }
 });
 
