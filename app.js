@@ -99,7 +99,7 @@ app.post('/register', async function(req, res) {
                     db.collection("users").doc(userUID).set(data)
                         .then(function() {
                             res.render('Main/main', {user: user});
-                            return;
+
                         })
 
                         // IF USER CAN'T BE ADDED TO DB, REMOVING ACCOUNT FROM FIREBASE AUTHENTICATION
@@ -243,7 +243,7 @@ app.get('/disconnect', function(req, res) {
 });
 
 let users = new Users();
-let opponent = false
+let opponent = false;
 
 // the server listen for a connection
 io.on('connection', (socket) => {
@@ -318,7 +318,7 @@ io.on('connection', (socket) => {
                 challenger: challenger,
                 challenged: challenged
               });
-            }, 5000);
+            }, 3000);
 
             // send currrent user in play.html
             //callback();
@@ -336,8 +336,14 @@ io.on('connection', (socket) => {
         });
 
         // update the adversaire board
-        socket.on('UpdateBoard', (res) => {
-          io.emit('UpdateAdversaireBoard', res);
+        socket.on('UpdateBoardMouvement', (res) => {
+          io.emit('UpdateBoardMouvement', res);
+
+        });
+
+        socket.on('UpdapteBoardDelete', (res) => {
+            socket.broadcast.to(res.opponentSocket).emit('UpdapteBoardDelete',res);
+            console.log(res.opponentSocket);
         });
     }
 });
