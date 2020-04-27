@@ -47,6 +47,7 @@ document.getElementById('giveUpButton').addEventListener('click', function () {
 		document.getElementById('table').remove(); // EFFACE ECHEQUIER
 		document.getElementById('giveUpButton').remove(); // EFFACE LE BOUTON ABANDON
 		document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "VOUS AVEZ PERDU LA PARTIE PAR ABANDON";
+		setTimeout(redir,5000);
 		socket.emit("GiveUpRequest", opponent.idSocket);
 	} else {
 		console.log("ANNULATION DEMANDE ABANDON");
@@ -58,5 +59,11 @@ socket.on("GiveUpRequest", function (res) {
 	document.getElementById('table').remove(); // EFFACE ECHEQUIER
 	document.getElementById('giveUpButton').remove(); // EFFACE LE BOUTON ABANDON
 	document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "VOUS AVEZ GAGNE LA PARTIE PAR ABANDON DE L'ADVERSAIRE";
+	setTimeout(redir,5000);
 	// AJOUTER CODE POUR FINIR LA PARTIE
 });
+
+function redir(){
+	self.location.href="/main";
+	console.log("REDIRECTION AUTO DANS 5 SEC");
+}
