@@ -7,6 +7,7 @@ logout.addEventListener('click', function () {socket.emit('NewLogout');});
 // socket when new user connecte
 socket.on("updateUserConnected", function (users, dbUsers) {
 
+    console.log(users);
     var usernameValue = document.getElementById("username"); // RECUPERATION USERNAME DANS HTML
 
     var tableau = document.getElementById("tableau");
@@ -18,6 +19,7 @@ socket.on("updateUserConnected", function (users, dbUsers) {
     var listeUtilisateursNonConnectes = []; // LISTE DES UTILISATEURS NON CONNECTES
     var boolConnecte = false;
     var btn = document.createElement("BUTTON");
+    let meUsername;
 
     // PARCOURS DES UTILISATEURS DE LA BD ET AJOUT DANS LA LISTE CONNECTE OU NON
     dbUsers.forEach(function (user) {
@@ -30,7 +32,6 @@ socket.on("updateUserConnected", function (users, dbUsers) {
                 userConnecte = value;
             }
             if (socket.id === value.idSocket) {
-              btn.innerHTML = "XXXX";
               usernameValue.innerHTML = value.username;
             }
         });
@@ -46,15 +47,16 @@ socket.on("updateUserConnected", function (users, dbUsers) {
         ligne.id = donnees[0];
         var colonne1 = ligne.insertCell(0); // AFFICHAGE NOM UTILISATEUR
         colonne1.innerHTML = donnees[0];
-        var colonne2 = ligne.insertCell(1); // AFFICHAGE PARTIE PERDUES
-        colonne2.innerHTML = donnees[1];
-        var colonne3 = ligne.insertCell(2); // AFFICHAGE PARTIE GAGNEE
-        colonne3.innerHTML = donnees[2];
+        var colonne2 = ligne.insertCell(1); // AFFICHAGE PARTIE GAGNEE
+        colonne2.innerHTML = donnees[2];
+        var colonne3 = ligne.insertCell(2); // AFFICHAGE PARTIE PERDUES
+        colonne3.innerHTML = donnees[1];
         var colonne4 = ligne.insertCell(3); // BOUTON BATTLE
 
+
         // A RECHANGER
-        if(socket.id === listeUtilisateursConnectes[i].idSocket) {
-            btn.innerHTML = "XXXX";
+        if(usernameValue.innerHTML === donnees[0]) {
+            btn.innerHTML = "XXX";
         }else{
             btn.innerHTML = "Battle";
             users.forEach(function(value){
@@ -80,10 +82,10 @@ socket.on("updateUserConnected", function (users, dbUsers) {
         ligne.id = donnees[0];
         var colonne1 = ligne.insertCell(0);
         colonne1.innerHTML = donnees[0];
-        var colonne2 = ligne.insertCell(1); // AFFICHAGE PARTIE PERDUES
-        colonne2.innerHTML = donnees[1];
-        var colonne3 = ligne.insertCell(2); // AFFICHAGE PARTIE GAGNEE
-        colonne3.innerHTML = donnees[2];
+        var colonne2 = ligne.insertCell(1); // AFFICHAGE PARTIE GAGNEE
+        colonne2.innerHTML = donnees[2];
+        var colonne3 = ligne.insertCell(2); // AFFICHAGE PARTIE PERDUES
+        colonne3.innerHTML = donnees[1];
     }
 
 });

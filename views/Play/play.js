@@ -48,7 +48,7 @@ document.getElementById('giveUpButton').addEventListener('click', function () {
 		document.getElementById('giveUpButton').remove(); // EFFACE LE BOUTON ABANDON
 		document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "VOUS AVEZ PERDU LA PARTIE PAR ABANDON";
 		setTimeout(redir,3000);
-		socket.emit("GiveUpRequest", opponent.idSocket);
+		socket.emit("GiveUpRequest", me, opponent);
 	} else {
 		console.log("ANNULATION DEMANDE ABANDON");
 	}

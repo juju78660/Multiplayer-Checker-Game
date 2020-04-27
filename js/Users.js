@@ -37,6 +37,9 @@ class Users {
 
     endBattle(currentSocketId, opponentSocketId) {
 
+      console.log(opponentSocketId);
+      console.log(currentSocketId);
+
       // Change available and empty their socketId
       this.getUserBySocket(currentSocketId).available = true;
       this.usersWithoutSocket.push(this.getUserBySocket(currentSocketId));

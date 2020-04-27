@@ -289,9 +289,14 @@ io.on('connection', (socket) => {
                     console.log('NO USER FOUND IN DATABASE !');
                 }
 
+                // if not already in the list add him & send the update list
+                if (!users.getUserById(userobj.idUser)) {
+                    users.addUser(userobj);
+                    io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
+                }
+
                 // if return from battle
                 if (users.usersWithoutSocket.length !== 0) {
-                    console.log(users.usersWithoutSocket.length);
                     userobj = users.updateIdAfterBattle(socket.id);
                     io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
                 }
@@ -315,75 +320,85 @@ io.on('connection', (socket) => {
                 });
 
                         // end the game by give up
-                socket.on('GiveUpRequest', (opponentSocketId) => {
+                socket.on('GiveUpRequest', (me, opponent) => {
+
                   inBattle.push(users.getUserBySocket(socket.id));
-                  inBattle.push(users.getUserBySocket(opponentSocketId));
-                  socket.broadcast.to(opponentSocketId).emit('GiveUpRequest', opponentSocketId);
+                  inBattle.push(users.getUserBySocket(opponent.idSocket));
+                  socket.broadcast.to(opponent.idSocket).emit('GiveUpRequest', opponent.SocketId);
+
                   // remettre le available a true pour les 2 & envoyer la mise a jour
-                  users.endBattle(socket.id, opponentSocketId);
+                  users.endBattle(socket.id, opponent.idSocket);
                   setTimeout( () => {
                     io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
                   }, 3000);
-                });
-                    /*
-                    // INCREMENTATION
-                    const increment = firebase.firestore.FieldValue.increment(1);
-                    db.collection("users").doc(user.displayName).update({
-                        win: increment
+
+                  // INCREMENTATION
+                  const increment = firebase.firestore.FieldValue.increment(1);
+                  db.collection("users").doc(opponent.username).update({
+                      win: increment
+                  })
+                      .then(function() {
+                          console.log("INCREMENTATION REUSSIE")
+                      })
+                      .catch(function(error) {
+                          console.error("Error incrementing victory of user " +  opponent.username + ": ", error.message);
+                      });
+                  db.collection("users").doc(me.username).update({
+                        lost: increment
                     })
-                        .then(function() {
-                            console.log("INCREMENTATION REUSSIE")
-                        })
-                        .catch(function(error) {
-                            console.error("Error incrementing victory of user " +  user.displayName + ": ", error.message);
-                        });*/
+                    .then(function() {
+                        console.log("INCREMENTATION REUSSIE")
+                    })
+                    .catch(function(error) {
+                      console.error("Error incrementing lost of user " +  me.username + ": ", error.message);
+                    });
                 });
+
+
+                  // socket battle
+                  socket.on('battle', (res) => {
+
+                  // recover both opponent
+                    let challenger = users.getUserBySocket(res.challengerSocketId);
+                    let challenged = users.getUserBySocket(res.challengedSocketId);
+
+                    // Verif available & send both in play.html
+                    if (challenger.invite(challenged) == true) {
+
+                      // challenger take black
+                      challenger.color = "black";
+
+                      // challenged take white
+                      challenged.color = "white";
+                      challenged.turn = true;
+
+                      // Add them in list inBattle
+                      inBattle.push(challenger);
+                      inBattle.push(challenged);
+
+                      // Send both in play & update list
+                      io.to(challenger.idSocket).emit('battlePage');
+                      io.to(challenged.idSocket).emit('battlePage');
+
+                      // Wait until they are on play.html
+                      setTimeout( () => {
+                        io.to(challenger.idSocket).emit('UpdateBattle', {
+                          challenger: challenger,
+                          challenged: challenged,
+                          users: users.getUsers()
+
+                        });
+                        io.to(challenged.idSocket).emit('UpdateBattle', {
+                          challenger: challenger,
+                          challenged: challenged,
+                          users: users.getUsers()
+                        });
+                        io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
+                      }, 4000);
+                    }
+                  });
             });
 
-
-
-        // socket battle
-        socket.on('battle', (res) => {
-
-          // recover both opponent
-          let challenger = users.getUserBySocket(res.challengerSocketId);
-          let challenged = users.getUserBySocket(res.challengedSocketId);
-
-          // Verif available & send both in play.html
-          if (challenger.invite(challenged) == true) {
-
-            // challenger take black
-            challenger.color = "black";
-
-            // challenged take white
-            challenged.color = "white";
-            challenged.turn = true;
-
-            // Add them in list inBattle
-            inBattle.push(challenger);
-            inBattle.push(challenged);
-
-            // Send both in play & update list
-            io.to(challenger.idSocket).emit('battlePage');
-            io.to(challenged.idSocket).emit('battlePage');
-
-            // Wait until they are on play.html
-            setTimeout( () => {
-              io.to(challenger.idSocket).emit('UpdateBattle', {
-                challenger: challenger,
-                challenged: challenged,
-                users: users.getUsers()
-
-              });
-              io.to(challenged.idSocket).emit('UpdateBattle', {
-                challenger: challenger,
-                challenged: challenged,
-                users: users.getUsers()
-              });
-              io.emit('updateUserConnected', {users: users.getUsers()});
-            }, 4000);
-          }
-        });
 
         // Pass my turn & opponent turn
         socket.on('PassTurn', (res) => {
