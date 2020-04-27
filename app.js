@@ -158,6 +158,7 @@ app.post('/login', async function(req, res) {
                 if (user && firstStateChange) {
                     firstStateChange = false;
                     res.redirect("/main");
+                    //res.render('Main/main', {  user: user });
                 }
             });
         })
@@ -221,6 +222,7 @@ app.get('/main', function(req, res) {
     }
     else{
         res.render('Main/main', {  user: user });
+        //res.sendFile('Main/main.html', { root: __dirname + "/views" } );
     }
 });
 
@@ -248,7 +250,7 @@ app.get('/disconnect', function(req, res) {
 
 let users = new Users();
 let inBattle = [];
-let opponent = false
+let opponent = false;
 
 // the server listen for a connection
 io.on('connection', (socket) => {
@@ -262,7 +264,7 @@ io.on('connection', (socket) => {
         // if not already in the list add him & send the update list
         if (!users.getUserById(userobj.idUser)) {
           users.addUser(userobj);
-          io.emit('updateUserConnected', users.getUsers());
+          io.emit('updateUserConnected', {users: users.getUsers()});
         }
 
         // if user in battle update their socket id
@@ -280,10 +282,17 @@ io.on('connection', (socket) => {
           }
         }
 
+        // if return from battle
+        if (users.usersWithoutSocket.length !== 0) {
+            console.log(users.usersWithoutSocket.length);
+            userobj = users.updateIdAfterBattle(socket.id);
+            io.emit('updateUserConnected', {users: users.getUsers()});
+        }
+
         // Remove the user from the list and send it to the front
         socket.on('NewLogout', (message) => {
           users.removeUser(socket.id);
-          io.emit('updateUserConnected', users.getUsers());
+          io.emit('updateUserConnected', {users: users.getUsers()});
         });
 
         // Remove the user from the list and send it to the front
@@ -292,7 +301,7 @@ io.on('connection', (socket) => {
           if (users.getUserBySocket(socket.id)) {
             if ((users.getUserBySocket(socket.id)).available == true) {
                 users.removeUser(socket.id);
-                io.emit('updateUserConnected', users.getUsers());
+                io.emit('updateUserConnected', {users: users.getUsers()});
             }
           }
         });
@@ -307,11 +316,9 @@ io.on('connection', (socket) => {
           if (challenger.invite(challenged) == true) {
 
             // challenger take black
-            challenger.socketOpponent = challenged.idSocket;
             challenger.color = "black";
 
             // challenged take white
-            challenged.socketOpponent = challenger.idSocket;
             challenged.color = "white";
             challenged.turn = true;
 
@@ -327,19 +334,22 @@ io.on('connection', (socket) => {
             setTimeout( () => {
               io.to(challenger.idSocket).emit('UpdateBattle', {
                 challenger: challenger,
-                challenged: challenged
+                challenged: challenged,
+                users: users.getUsers()
+
               });
               io.to(challenged.idSocket).emit('UpdateBattle', {
                 challenger: challenger,
-                challenged: challenged
+                challenged: challenged,
+                users: users.getUsers()
               });
-            }, 5000);
+              io.emit('updateUserConnected', {users: users.getUsers()});
+            }, 4000);
           }
         });
 
         // Pass my turn & opponent turn
         socket.on('PassTurn', (res) => {
-          console.log(res);
           res.me.turn = false;
           res.opponent.turn = true;
           socket.emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
@@ -352,8 +362,15 @@ io.on('connection', (socket) => {
         });
 
         // end the game by give up
-        socket.on('GiveUpRequest', (res) => {
-            socket.broadcast.to(res).emit('GiveUpRequest', res);
+        socket.on('GiveUpRequest', (opponentSocketId) => {
+          inBattle.push(users.getUserBySocket(socket.id));
+          inBattle.push(users.getUserBySocket(opponentSocketId));
+          socket.broadcast.to(opponentSocketId).emit('GiveUpRequest', opponentSocketId);
+          // remettre le available a true pour les 2 & envoyer la mise a jour
+          users.endBattle(socket.id, opponentSocketId);
+          setTimeout( () => {
+            io.emit('updateUserConnected', {users: users.getUsers()});
+          }, 3000);
         });
     }
 });

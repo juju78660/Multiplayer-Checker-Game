@@ -4,19 +4,19 @@ const logout = document.getElementById('btn_logout');
 logout.addEventListener('click', function () {socket.emit('NewLogout');});
 
 // socket when new user connecte
-socket.on("updateUserConnected", function (users) {
+socket.on("updateUserConnected", function (res) {
 
-    var usernameValue = document.getElementById("username").firstChild.firstChild.nodeValue; // RECUPERATION USERNAME DANS HTML
+    var usernameValue = document.getElementById("username"); // RECUPERATION USERNAME DANS HTML
 
     var tableau = document.getElementById("tableau");
     // REMISE A ZERO DU TABLEAU
     while (tableau.firstChild) {
         tableau.removeChild(tableau.firstChild);
     }
-    console.log(users);
     // for each user create elem with name and button
-    users.forEach(function (user) {
-        if(user.username !== usernameValue) {
+    res.users.forEach(function (user) {
+        if(user.idSocket != socket.id && user.available) {
+          console.log(user);
             var ligne = tableau.insertRow(-1); // AJOUT LIGNE
             ligne.id = user.username;
             var colonne1 = ligne.insertCell(0);
@@ -33,7 +33,9 @@ socket.on("updateUserConnected", function (users) {
             });
             colonne2.appendChild(btn);
         }
-
+        else {
+          usernameValue.innerHTML = user.username;
+        }
     });
 });
 

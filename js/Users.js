@@ -4,6 +4,7 @@ class Users {
 
     constructor () {
         this.users = [];
+        this.usersWithoutSocket = [];
     }
 
     // Verifier si deja present
@@ -32,6 +33,26 @@ class Users {
             this.users = this.users.filter((user) => user.idSocket !== idSocket);
         }
         return user;
+    }
+
+    endBattle(currentSocketId, opponentSocketId) {
+
+      // Change available and empty their socketId
+      this.getUserBySocket(currentSocketId).available = true;
+      this.usersWithoutSocket.push(this.getUserBySocket(currentSocketId));
+      this.getUserBySocket(currentSocketId).idSocket = null;
+
+      this.getUserBySocket(opponentSocketId).available = true;
+      this.usersWithoutSocket.push(this.getUserBySocket(opponentSocketId));
+      this.getUserBySocket(opponentSocketId).idSocket = null;
+    }
+
+    // fill the 2 empty socket id
+    updateIdAfterBattle(socketId) {
+      // modifier 1 des 2 avec la nouvelle socket
+      let user = this.usersWithoutSocket.shift();
+      user.idSocket = socketId;
+      return user;
     }
 
     getUsers() {
