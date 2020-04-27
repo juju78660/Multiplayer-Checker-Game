@@ -1,0 +1,11 @@
+td {
+    padding:2px 5px;
+}
+
+th {
+    padding:5px;
+}
+
+tbody {
+    text-align: center;
+}

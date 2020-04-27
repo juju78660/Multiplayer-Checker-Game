@@ -10,7 +10,6 @@ class userObj {
         this.idUser = idUser;
         this.username = username;
         this.available = true;
-        this.socketOpponent = null;
         this.color = null;
         this.turn = false;
     }

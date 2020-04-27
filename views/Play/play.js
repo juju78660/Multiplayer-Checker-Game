@@ -2,7 +2,7 @@ let me;
 let opponent;
 
 // socket when opponent moove
-socket.on("UpdateBoardMouvement", (res) => {
+socket.on("UpdateAdversaireBoard", (res) => {
 	block[res.start_cordy][res.start_cordx] = new square_p(square_class[returnSquareIndex(res.start_cordx, res.start_cordy)], res.start_cordx, res.start_cordy);
 
 	//console.log(me);
@@ -40,6 +40,32 @@ socket.on("UpdateBattle", function (res) {
 	if(me.turn) document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " - C'est votre tour!";
 	else document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " - C'est au tour de l'ennemi!";
 });
+
+document.getElementById('giveUpButton').addEventListener('click', function () {
+	if (confirm("Etes-vous sûr de vouloir abandonner la partie?")) {
+		document.getElementById('table').remove(); // EFFACE ECHEQUIER
+		document.getElementById('giveUpButton').remove(); // EFFACE LE BOUTON ABANDON
+		document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "VOUS AVEZ PERDU LA PARTIE PAR ABANDON";
+		setTimeout(redir,3000);
+		socket.emit("GiveUpRequest", me, opponent);
+	} else {
+		console.log("ANNULATION DEMANDE ABANDON");
+	}
+});
+
+// end game by give up
+socket.on("GiveUpRequest", function (res) {
+	document.getElementById('table').remove(); // EFFACE ECHEQUIER
+	document.getElementById('giveUpButton').remove(); // EFFACE LE BOUTON ABANDON
+	document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "VOUS AVEZ GAGNE LA PARTIE PAR ABANDON DE L'ADVERSAIRE";
+	setTimeout(redir,3000);
+	// AJOUTER CODE POUR FINIR LA PARTIE
+});
+
+function redir(){
+	self.location.href="/main";
+	console.log("REDIRECTION AUTO DANS 3 SEC");
+}
 
 
 socket.on('UpdapteBoardDelete', (res) => {
