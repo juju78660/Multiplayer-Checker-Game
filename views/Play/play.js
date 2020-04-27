@@ -64,6 +64,6 @@ socket.on("GiveUpRequest", function (res) {
 });
 
 function redir(){
-    self.location.href="/main";
-    console.log("REDIRECTION AUTO DANS 10 SEC");
+	self.location.href="/main";
+	console.log("REDIRECTION AUTO DANS 3 SEC");
 }
