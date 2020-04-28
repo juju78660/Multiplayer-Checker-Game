@@ -19,7 +19,6 @@ socket.on("updateUserConnected", function (users, dbUsers) {
     var listeUtilisateursNonConnectes = []; // LISTE DES UTILISATEURS NON CONNECTES
     var boolConnecte = false;
     var btn = document.createElement("BUTTON");
-    let meUsername;
 
     // PARCOURS DES UTILISATEURS DE LA BD ET AJOUT DANS LA LISTE CONNECTE OU NON
     dbUsers.forEach(function (user) {
