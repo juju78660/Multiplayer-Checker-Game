@@ -38,14 +38,16 @@ const port = 3000;
 let server = http.createServer(app);
 let io = socketIO(server);
 
-/****** Routes *******/
+/********* ***********/
+/****** ROUTES *******/
+/********* ***********/
 app.get('/', function(req, res){
-    // Retirer if else pour pouvoir connecter plusieurs utilisateur
     res.sendFile('home.html', { root: __dirname + "/views/Home" } );
 });
 
+
+/****** PAGE REGISTER *******/
 app.get('/register', function(req, res) {
-    // Retirer if else pour pouvoir connecter plusieurs utilisateur
     res.render('Register/register');
 });
 
@@ -59,14 +61,12 @@ app.post('/register', async function(req, res) {
     var password = req.body.password;
     var repassword = req.body.re_password;
 
-    // DECONNECTE L'UTILISATEUR POSSIBLEMENT DEJA CONNECTE
+    // DISCONNECT POSSIBLY CONNECTED USER
     if(firebase.auth().currentUser) firebase.auth().signOut();
-
 
     if(password == repassword)
     {
-
-        // AJOUT COMPTE AUTHENTIFICATION
+        // ACCOUNT CREATION ON FIREBASE AUTHENTIFICATION
         firebase.auth().createUserWithEmailAndPassword(email,password).catch(function(error)
         {
             var errorCode = error.code;
@@ -80,8 +80,9 @@ app.post('/register', async function(req, res) {
                 re_password: req.body.re_password
             });
         });
+
         var boolDejaConnecte = false;
-        // AJOUT UTILISATEUR BD
+        // ADD USER TO DB
         firebase.auth().onAuthStateChanged(function(user)
         {
             if(user && !boolDejaConnecte){
@@ -91,8 +92,7 @@ app.post('/register', async function(req, res) {
                 user.updateProfile({
                     displayName: username
                 }).then(function() {
-
-                    // ADD USER TO THE DB
+                    // USER DATA TO INSERT IN DB
                     let data = {
                         userUID : user.uid,
                         username : username,
@@ -100,6 +100,7 @@ app.post('/register', async function(req, res) {
                         win: 0,
                         lost: 0
                     };
+                    // ADD USER TO THE DB
                     db.collection("users").doc(username).set(data)
                         .then(function() {
                             res.redirect("/main");
@@ -110,25 +111,25 @@ app.post('/register', async function(req, res) {
                         .catch(function(error) {
                             console.error("Error adding user: ", error);
                             user.delete()
-                            .then(function() {console.error("USER ACCOUNT DELETED");})
-                            .catch(function(error) { console.error("Error deleting user account: ", error);});
+                                .then(function() {console.error("USER ACCOUNT DELETED");})
+                                .catch(function(error) { console.error("Error deleting user account: ", error);});
                         });
-                    })
-                        .catch(function(error)
-                        {
-                            var errorCode = error.code;
-                            var errorMessage = error.message;
-                            console.log(errorCode + ":" + errorMessage);
+                })
+                    .catch(function(error)
+                    {
+                        var errorCode = error.code;
+                        var errorMessage = error.message;
+                        console.log(errorCode + ":" + errorMessage);
 
-                            res.render('Register/register', {error_message: errorMessage,
-                                username: username,
-                                email: email,
-                                password: password,
-                                re_password: repassword
-                            });
+                        res.render('Register/register', {error_message: errorMessage,
+                            username: username,
+                            email: email,
+                            password: password,
+                            re_password: repassword
                         });
-                }
-            });
+                    });
+            }
+        });
     }
     else        // IF PASSWORD AND PASSWORD CONFIRMATION ARE NOT ==
     {
@@ -143,7 +144,6 @@ app.post('/register', async function(req, res) {
 
 /****** LOGIN *******/
 app.get('/login', function(req, res) {
-    // retirer if else pour pouvoir connecter plusieurs utilisateur
     res.render('Login/login');
 });
 
@@ -152,7 +152,7 @@ app.post('/login', async function(req, res) {
     try {
         var email = req.body.email;
         var password = req.body.password;
-
+        // USER CONNEXION
         firebase.auth().signInWithEmailAndPassword(email, password).then(function(firebaseUser) {
             firebase.auth().onAuthStateChanged(function(user) {
                 if (user && firstStateChange) {
@@ -161,6 +161,7 @@ app.post('/login', async function(req, res) {
                 }
             });
         })
+        // IF USER CONNEXION FAIL
             .catch(function(error) {
                 var errorCode = error.code;
                 var errorMessage = error.message;
@@ -196,22 +197,19 @@ app.post('/forgetPassword', async function(req, res) {
         {
             res.render('Login/forgetPassword', {result_message: "The instructions to reset your password has been sent to you"});
         })
-        .catch(function(error)
-        {
-            var errorCode = error.code;
-            var errorMessage = error.message;
+            .catch(function(error)
+            {
+                var errorCode = error.code;
+                var errorMessage = error.message;
 
-            console.log(errorCode + ":" + errorMessage);
-            res.render('Login/forgetPassword', {result_message: errorMessage});
-        });
+                console.log(errorCode + ":" + errorMessage);
+                res.render('Login/forgetPassword', {result_message: errorMessage});
+            });
     }
     catch(error) {
         console.error("Reset password error:" + error);
     }
 });
-
-
-
 
 /****** MAIN *******/
 app.get('/main', function(req, res) {
@@ -221,19 +219,15 @@ app.get('/main', function(req, res) {
     }
     else{
         res.render('Main/main', {  user: user });
-        //res.sendFile('Main/main.html', { root: __dirname + "/views" } );
     }
 });
 
+/****** PLAY *******/
 app.get('/play', function(req, res) {
     var user = firebase.auth().currentUser;
     if(!user){
         res.redirect('/login');
     }
-    /*else if(users.getUserById(user.uid).available){
-        res.redirect('/main');
-        console.log("PAS EN BATAILLE");
-    }*/
     else{
         res.sendFile('Play/play.html', { root: __dirname + "/views" } );
     }
@@ -246,6 +240,10 @@ app.get('/disconnect', function(req, res) {
     }
     res.redirect('/');
 });
+
+/********* ***********/
+/****** SOCKET *******/
+/********* ***********/
 
 let users = new Users();
 let inBattle = [];
@@ -263,17 +261,17 @@ io.on('connection', (socket) => {
 
         // if user in battle update their socket id
         if (inBattle.length != 0) {
-          if (!opponent) {
-            let challenger = inBattle.shift();
-            users.getUserById(challenger.idUser).idSocket = socket.id;
-            opponent = true;
-          }
-          else {
-            let challenged = inBattle.shift();
-            users.getUserById(challenged.idUser).idSocket = socket.id;
-            opponent = false;
-            inBattle = [];
-          }
+            if (!opponent) {
+                let challenger = inBattle.shift();
+                users.getUserById(challenger.idUser).idSocket = socket.id;
+                opponent = true;
+            }
+            else {
+                let challenged = inBattle.shift();
+                users.getUserById(challenged.idUser).idSocket = socket.id;
+                opponent = false;
+                inBattle = [];
+            }
         }
 
         // RECUPERATION DONNES UTILISATEUR EN BD
@@ -319,98 +317,98 @@ io.on('connection', (socket) => {
                     }
                 });
 
-                        // end the game by give up
+                // end the game by give up
                 socket.on('GiveUpRequest', (me, opponent) => {
 
-                  inBattle.push(users.getUserBySocket(socket.id));
-                  inBattle.push(users.getUserBySocket(opponent.idSocket));
-                  socket.broadcast.to(opponent.idSocket).emit('GiveUpRequest', opponent.SocketId);
+                    inBattle.push(users.getUserBySocket(socket.id));
+                    inBattle.push(users.getUserBySocket(opponent.idSocket));
+                    socket.broadcast.to(opponent.idSocket).emit('GiveUpRequest', opponent.SocketId);
 
-                  // remettre le available a true pour les 2 & envoyer la mise a jour
-                  users.endBattle(socket.id, opponent.idSocket);
-                  setTimeout( () => {
-                    io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
-                  }, 3000);
+                    // remettre le available a true pour les 2 & envoyer la mise a jour
+                    users.endBattle(socket.id, opponent.idSocket);
+                    setTimeout( () => {
+                        io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
+                    }, 3000);
 
-                  // INCREMENTATION
-                  const increment = firebase.firestore.FieldValue.increment(1);
-                  db.collection("users").doc(opponent.username).update({
-                      win: increment
-                  })
-                      .then(function() {
-                          console.log("INCREMENTATION REUSSIE")
-                      })
-                      .catch(function(error) {
-                          console.error("Error incrementing victory of user " +  opponent.username + ": ", error.message);
-                      });
-                  db.collection("users").doc(me.username).update({
+                    // INCREMENTATION
+                    const increment = firebase.firestore.FieldValue.increment(1);
+                    db.collection("users").doc(opponent.username).update({
+                        win: increment
+                    })
+                        .then(function() {
+                            console.log("INCREMENTATION REUSSIE")
+                        })
+                        .catch(function(error) {
+                            console.error("Error incrementing victory of user " +  opponent.username + ": ", error.message);
+                        });
+                    db.collection("users").doc(me.username).update({
                         lost: increment
                     })
-                    .then(function() {
-                        console.log("INCREMENTATION REUSSIE")
-                    })
-                    .catch(function(error) {
-                      console.error("Error incrementing lost of user " +  me.username + ": ", error.message);
-                    });
+                        .then(function() {
+                            console.log("INCREMENTATION REUSSIE")
+                        })
+                        .catch(function(error) {
+                            console.error("Error incrementing lost of user " +  me.username + ": ", error.message);
+                        });
                 });
 
 
-                  // socket battle
-                  socket.on('battle', (res) => {
+                // socket battle
+                socket.on('battle', (res) => {
 
-                  // recover both opponent
+                    // recover both opponent
                     let challenger = users.getUserBySocket(res.challengerSocketId);
                     let challenged = users.getUserBySocket(res.challengedSocketId);
 
                     // Verif available & send both in play.html
                     if (challenger.invite(challenged) == true) {
 
-                      // challenger take black
-                      challenger.color = "black";
+                        // challenger take black
+                        challenger.color = "black";
 
-                      // challenged take white
-                      challenged.color = "white";
-                      challenged.turn = true;
+                        // challenged take white
+                        challenged.color = "white";
+                        challenged.turn = true;
 
-                      // Add them in list inBattle
-                      inBattle.push(challenger);
-                      inBattle.push(challenged);
+                        // Add them in list inBattle
+                        inBattle.push(challenger);
+                        inBattle.push(challenged);
 
-                      // Send both in play & update list
-                      io.to(challenger.idSocket).emit('battlePage');
-                      io.to(challenged.idSocket).emit('battlePage');
+                        // Send both in play & update list
+                        io.to(challenger.idSocket).emit('battlePage');
+                        io.to(challenged.idSocket).emit('battlePage');
 
-                      // Wait until they are on play.html
-                      setTimeout( () => {
-                        io.to(challenger.idSocket).emit('UpdateBattle', {
-                          challenger: challenger,
-                          challenged: challenged,
-                          users: users.getUsers()
+                        // Wait until they are on play.html
+                        setTimeout( () => {
+                            io.to(challenger.idSocket).emit('UpdateBattle', {
+                                challenger: challenger,
+                                challenged: challenged,
+                                users: users.getUsers()
 
-                        });
-                        io.to(challenged.idSocket).emit('UpdateBattle', {
-                          challenger: challenger,
-                          challenged: challenged,
-                          users: users.getUsers()
-                        });
-                        io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
-                      }, 4000);
+                            });
+                            io.to(challenged.idSocket).emit('UpdateBattle', {
+                                challenger: challenger,
+                                challenged: challenged,
+                                users: users.getUsers()
+                            });
+                            io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
+                        }, 4000);
                     }
-                  });
+                });
             });
 
 
         // Pass my turn & opponent turn
         socket.on('PassTurn', (res) => {
-          res.me.turn = false;
-          res.opponent.turn = true;
-          socket.emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
-          socket.broadcast.to(res.opponent.idSocket).emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
+            res.me.turn = false;
+            res.opponent.turn = true;
+            socket.emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
+            socket.broadcast.to(res.opponent.idSocket).emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
         });
 
         // update the adversaire board
         socket.on('UpdateBoardMvt', (res) => {
-          socket.broadcast.to(res.opponent.idSocket).emit('UpdateBoardMvt', res);
+            socket.broadcast.to(res.opponent.idSocket).emit('UpdateBoardMvt', res);
         });
 
         //update opponent board delete
@@ -423,3 +421,4 @@ io.on('connection', (socket) => {
 
 // HAVE REPLACE app by server
 server.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
