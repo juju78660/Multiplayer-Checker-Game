@@ -18,10 +18,6 @@ socket.on("updateUserConnected", function (users, dbUsers) {
     var listeUtilisateursConnectes = [];    // LISTE DES UTILISATEURS CONNECTES
     var listeUtilisateursNonConnectes = []; // LISTE DES UTILISATEURS NON CONNECTES
     var boolConnecte = false;
-<<<<<<< HEAD
-    var btn = document.createElement("BUTTON");
-=======
->>>>>>> a9a318cc951c7787bf108c715ba4ca4b4892b0e6
 
     // PARCOURS DES UTILISATEURS DE LA BD ET AJOUT DANS LA LISTE CONNECTE OU NON
     dbUsers.forEach(function (user) {
@@ -95,4 +91,3 @@ socket.on("updateUserConnected", function (users, dbUsers) {
 socket.on("battlePage", function () {
     location.href = '/play';
 });
-
