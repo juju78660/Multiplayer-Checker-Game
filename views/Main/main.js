@@ -18,7 +18,10 @@ socket.on("updateUserConnected", function (users, dbUsers) {
     var listeUtilisateursConnectes = [];    // LISTE DES UTILISATEURS CONNECTES
     var listeUtilisateursNonConnectes = []; // LISTE DES UTILISATEURS NON CONNECTES
     var boolConnecte = false;
+<<<<<<< HEAD
     var btn = document.createElement("BUTTON");
+=======
+>>>>>>> a9a318cc951c7787bf108c715ba4ca4b4892b0e6
 
     // PARCOURS DES UTILISATEURS DE LA BD ET AJOUT DANS LA LISTE CONNECTE OU NON
     dbUsers.forEach(function (user) {
@@ -31,7 +34,7 @@ socket.on("updateUserConnected", function (users, dbUsers) {
                 userConnecte = value;
             }
             if (socket.id === value.idSocket) {
-              usernameValue.innerHTML = value.username;
+                usernameValue.innerHTML = value.username;
             }
         });
         if(boolConnecte) listeUtilisateursConnectes.push([user[0], user[1][1], user[1][2]]);
@@ -53,7 +56,7 @@ socket.on("updateUserConnected", function (users, dbUsers) {
         var colonne4 = ligne.insertCell(3); // BOUTON BATTLE
 
 
-        // A RECHANGER
+        // SI L'AJOUT DU BOUTON CORRESPOND A L'UTILISATEUR
         if(usernameValue.innerHTML === donnees[0]) {
             btn.innerHTML = "XXX";
         }else{
@@ -68,7 +71,6 @@ socket.on("updateUserConnected", function (users, dbUsers) {
                     });
                 }
             });
-
         }
         btn.setAttribute("class", "btn btn-dark");
         colonne4.appendChild(btn);
@@ -86,7 +88,6 @@ socket.on("updateUserConnected", function (users, dbUsers) {
         var colonne3 = ligne.insertCell(2); // AFFICHAGE PARTIE PERDUES
         colonne3.innerHTML = donnees[1];
     }
-
 });
 
 
@@ -94,3 +95,4 @@ socket.on("updateUserConnected", function (users, dbUsers) {
 socket.on("battlePage", function () {
     location.href = '/play';
 });
+

@@ -2,7 +2,7 @@ let me;
 let opponent;
 
 // socket when opponent moove
-socket.on("UpdateAdversaireBoard", (res) => {
+socket.on("UpdateBoardMvt", (res) => {
 	block[res.start_cordy][res.start_cordx] = new square_p(square_class[returnSquareIndex(res.start_cordx, res.start_cordy)], res.start_cordx, res.start_cordy);
 
 	//console.log(me);
@@ -29,7 +29,6 @@ socket.on("UpdateAdversaireBoard", (res) => {
 
 // recover both user
 socket.on("UpdateBattle", function (res) {
-	console.log(res);
 	if (res.challenged.idSocket == socket.id) {
 		me = res.challenged;
 		opponent = res.challenger;
@@ -67,3 +66,23 @@ function redir(){
 	self.location.href="/main";
 	console.log("REDIRECTION AUTO DANS 3 SEC");
 }
+
+
+socket.on('UpdapteBoardDelete', (res) => {
+	block[res.coordY][res.coordX].ocupied = false;
+	let i = returnSquareIndex(res.coordX, res.coordY);
+	console.log("bonjour ############");
+	if(block[res.coordY][res.coordX].pieceId < 100 ) {
+		console.log("pion blanc");
+		let indexChecker =  block[res.coordY][res.coordX].pieceId;
+		white_checker_class[indexChecker].style.visibility= 'hidden';
+	}
+	else {
+		console.log("pion noir");
+		console.log(block[res.coordY][res.coordX].id);
+		let indexChecker =  block[res.coordY][res.coordX].pieceId -100;
+		black_checker_class[indexChecker].style.visibility = 'hidden';
+	}
+
+	block[res.coordY][res.coordX] = new square_p(square_class[i], res.coordX, res.coordY);
+});
