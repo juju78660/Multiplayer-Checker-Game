@@ -81,53 +81,54 @@ app.post('/register', async function(req, res) {
             });
         });
 
-        var boolDejaConnecte = false;
+        var firstTimeCall = true;
         // ADD USER TO DB
         firebase.auth().onAuthStateChanged(function(user)
         {
-            if(user && !boolDejaConnecte){
-                console.log("ICIII");
-                boolDejaConnecte = true;
-                // ADD USERNAME INFO TO AUTH SYSTEM
-                user.updateProfile({
-                    displayName: username
-                }).then(function() {
-                    // USER DATA TO INSERT IN DB
-                    let data = {
-                        userUID : user.uid,
-                        username : username,
-                        email: email,
-                        win: 0,
-                        lost: 0
-                    };
-                    // ADD USER TO THE DB
-                    db.collection("users").doc(username).set(data)
-                        .then(function() {
-                            res.redirect("/main");
-                            console.log("User " + username + " added to DB");
-                            return(1);
-                        })
-                        // IF USER CAN'T BE ADDED TO DB, REMOVING ACCOUNT FROM FIREBASE AUTHENTICATION
-                        .catch(function(error) {
-                            console.error("Error adding user: ", error);
-                            user.delete()
-                                .then(function() {console.error("USER ACCOUNT DELETED");})
-                                .catch(function(error) { console.error("Error deleting user account: ", error);});
-                        });
-                })
-                    .catch(function(error)
-                    {
-                        var errorCode = error.code;
-                        var errorMessage = error.message;
-                        console.log(errorCode + ":" + errorMessage);
-
-                        res.render('Register/register', {error_message: errorMessage,
-                            username: username,
+            if(user){
+                if(firstTimeCall){
+                    firstTimeCall = false;
+                    // ADD USERNAME INFO TO AUTH SYSTEM
+                    user.updateProfile({
+                        displayName: username
+                    }).then(function() {
+                        // USER DATA TO INSERT IN DB
+                        let data = {
+                            userUID : user.uid,
+                            username : username,
                             email: email,
-                            password: password,
-                            re_password: repassword
+                            win: 0,
+                            lost: 0
+                        };
+                        // ADD USER TO THE DB
+                        db.collection("users").doc(username).set(data)
+                            .then(function() {
+                                res.redirect("/main");
+                                console.log("User " + username + " added to DB");
+                                return(1);
+                            })
+                            // IF USER CAN'T BE ADDED TO DB, REMOVING ACCOUNT FROM FIREBASE AUTHENTICATION
+                            .catch(function(error) {
+                                console.error("Error adding user: ", error);
+                                user.delete()
+                                    .then(function() {console.error("USER ACCOUNT DELETED");})
+                                    .catch(function(error) { console.error("Error deleting user account: ", error);});
+                            });
+                    })
+                        .catch(function(error)
+                        {
+                            var errorCode = error.code;
+                            var errorMessage = error.message;
+                            console.log(errorCode + ":" + errorMessage);
+
+                            res.render('Register/register', {error_message: errorMessage,
+                                username: username,
+                                email: email,
+                                password: password,
+                                re_password: repassword
+                            });
                         });
-                    });
+                }
             }
         });
     }
