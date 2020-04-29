@@ -38,35 +38,33 @@ const port = 3000;
 let server = http.createServer(app);
 let io = socketIO(server);
 
-/****** Routes *******/
+/********* ***********/
+/****** ROUTES *******/
+/********* ***********/
 app.get('/', function(req, res){
-    // Retirer if else pour pouvoir connecter plusieurs utilisateur
     res.sendFile('home.html', { root: __dirname + "/views/Home" } );
 });
 
+
+/****** PAGE REGISTER *******/
 app.get('/register', function(req, res) {
-    // Retirer if else pour pouvoir connecter plusieurs utilisateur
     res.render('Register/register');
 });
 
-var boolDejaConnecte = false;
 app.post('/register', async function(req, res) {
-    boolDejaConnecte = false;
-    var firstStateChange = true;
+    var firstTimeCall = true;
 
     var username = req.body.username;
     var email = req.body.email;
     var password = req.body.password;
     var repassword = req.body.re_password;
 
-    // DECONNECTE L'UTILISATEUR POSSIBLEMENT DEJA CONNECTE
+    // DISCONNECT POSSIBLY CONNECTED USER
     if(firebase.auth().currentUser) firebase.auth().signOut();
-
 
     if(password == repassword)
     {
-
-        // AJOUT COMPTE AUTHENTIFICATION
+        // ACCOUNT CREATION ON FIREBASE AUTHENTIFICATION
         firebase.auth().createUserWithEmailAndPassword(email,password).catch(function(error)
         {
             var errorCode = error.code;
@@ -80,39 +78,38 @@ app.post('/register', async function(req, res) {
                 re_password: req.body.re_password
             });
         });
-        var boolDejaConnecte = false;
-        // AJOUT UTILISATEUR BD
+        // ADD USER TO DB
         firebase.auth().onAuthStateChanged(function(user)
         {
-            if(user && !boolDejaConnecte){
-                console.log("ICIII");
-                boolDejaConnecte = true;
-                // ADD USERNAME INFO TO AUTH SYSTEM
-                user.updateProfile({
-                    displayName: username
-                }).then(function() {
-
-                    // ADD USER TO THE DB
-                    let data = {
-                        userUID : user.uid,
-                        username : username,
-                        email: email,
-                        win: 0,
-                        lost: 0
-                    };
-                    db.collection("users").doc(username).set(data)
-                        .then(function() {
-                            res.redirect("/main");
-                            console.log("User " + username + " added to DB");
-                            return(1);
-                        })
-                        // IF USER CAN'T BE ADDED TO DB, REMOVING ACCOUNT FROM FIREBASE AUTHENTICATION
-                        .catch(function(error) {
-                            console.error("Error adding user: ", error);
-                            user.delete()
-                            .then(function() {console.error("USER ACCOUNT DELETED");})
-                            .catch(function(error) { console.error("Error deleting user account: ", error);});
-                        });
+            if(user){
+                if(firstTimeCall){
+                    firstTimeCall = false;
+                    // ADD USERNAME INFO TO AUTH SYSTEM
+                    user.updateProfile({
+                        displayName: username
+                    }).then(function() {
+                        // USER DATA TO INSERT IN DB
+                        let data = {
+                            userUID : user.uid,
+                            username : username,
+                            email: email,
+                            win: 0,
+                            lost: 0
+                        };
+                        // ADD USER TO THE DB
+                        db.collection("users").doc(username).set(data)
+                            .then(function() {
+                                res.redirect("/main");
+                                console.log("User " + username + " added to DB");
+                                return(1);
+                            })
+                            // IF USER CAN'T BE ADDED TO DB, REMOVING ACCOUNT FROM FIREBASE AUTHENTICATION
+                            .catch(function(error) {
+                                console.error("Error adding user: ", error);
+                                user.delete()
+                                    .then(function() {console.error("USER ACCOUNT DELETED");})
+                                    .catch(function(error) { console.error("Error deleting user account: ", error);});
+                            });
                     })
                         .catch(function(error)
                         {
@@ -128,7 +125,8 @@ app.post('/register', async function(req, res) {
                             });
                         });
                 }
-            });
+            }
+        });
     }
     else        // IF PASSWORD AND PASSWORD CONFIRMATION ARE NOT ==
     {
@@ -143,7 +141,6 @@ app.post('/register', async function(req, res) {
 
 /****** LOGIN *******/
 app.get('/login', function(req, res) {
-    // retirer if else pour pouvoir connecter plusieurs utilisateur
     res.render('Login/login');
 });
 
@@ -152,7 +149,7 @@ app.post('/login', async function(req, res) {
     try {
         var email = req.body.email;
         var password = req.body.password;
-
+        // USER CONNEXION
         firebase.auth().signInWithEmailAndPassword(email, password).then(function(firebaseUser) {
             firebase.auth().onAuthStateChanged(function(user) {
                 if (user && firstStateChange) {
@@ -161,6 +158,7 @@ app.post('/login', async function(req, res) {
                 }
             });
         })
+        // IF USER CONNEXION FAIL
             .catch(function(error) {
                 var errorCode = error.code;
                 var errorMessage = error.message;
@@ -196,22 +194,19 @@ app.post('/forgetPassword', async function(req, res) {
         {
             res.render('Login/forgetPassword', {result_message: "The instructions to reset your password has been sent to you"});
         })
-        .catch(function(error)
-        {
-            var errorCode = error.code;
-            var errorMessage = error.message;
+            .catch(function(error)
+            {
+                var errorCode = error.code;
+                var errorMessage = error.message;
 
-            console.log(errorCode + ":" + errorMessage);
-            res.render('Login/forgetPassword', {result_message: errorMessage});
-        });
+                console.log(errorCode + ":" + errorMessage);
+                res.render('Login/forgetPassword', {result_message: errorMessage});
+            });
     }
     catch(error) {
         console.error("Reset password error:" + error);
     }
 });
-
-
-
 
 /****** MAIN *******/
 app.get('/main', function(req, res) {
@@ -221,19 +216,15 @@ app.get('/main', function(req, res) {
     }
     else{
         res.render('Main/main', {  user: user });
-        //res.sendFile('Main/main.html', { root: __dirname + "/views" } );
     }
 });
 
+/****** PLAY *******/
 app.get('/play', function(req, res) {
     var user = firebase.auth().currentUser;
     if(!user){
         res.redirect('/login');
     }
-    /*else if(users.getUserById(user.uid).available){
-        res.redirect('/main');
-        console.log("PAS EN BATAILLE");
-    }*/
     else{
         res.sendFile('Play/play.html', { root: __dirname + "/views" } );
     }
@@ -246,6 +237,10 @@ app.get('/disconnect', function(req, res) {
     }
     res.redirect('/');
 });
+
+/********* ***********/
+/****** SOCKET *******/
+/********* ***********/
 
 let users = new Users();
 let inBattle = [];
@@ -261,19 +256,19 @@ io.on('connection', (socket) => {
 
         let userobj = new userObj(socket.id, user.uid, user.displayName);
 
-        // if user in battle update their socket id
+        // if user in inbattle list update their socket id with new one
         if (inBattle.length != 0) {
-          if (!opponent) {
-            let challenger = inBattle.shift();
-            users.getUserById(challenger.idUser).idSocket = socket.id;
-            opponent = true;
-          }
-          else {
-            let challenged = inBattle.shift();
-            users.getUserById(challenged.idUser).idSocket = socket.id;
-            opponent = false;
-            inBattle = [];
-          }
+            if (!opponent) {
+                let challenger = inBattle.shift();
+                users.getUserById(challenger.idUser).idSocket = socket.id;
+                opponent = true;
+            }
+            else {
+                let challenged = inBattle.shift();
+                users.getUserById(challenged.idUser).idSocket = socket.id;
+                opponent = false;
+                inBattle = [];
+            }
         }
 
         // RECUPERATION DONNES UTILISATEUR EN BD
@@ -284,133 +279,122 @@ io.on('connection', (socket) => {
                 if (!querySnapshot.empty) {
                     querySnapshot.docs.map(function (documentSnapshot) {
                         dbUsers.set(documentSnapshot.data().username, [documentSnapshot.data().username, documentSnapshot.data().lost, documentSnapshot.data().win]);
-                    })
-                } else {
-                    console.log('NO USER FOUND IN DATABASE !');
-                }
+                    });
+                } else console.log('NO USER FOUND IN DATABASE !');
 
-                // if not already in the list add him & send the update list
-                if (!users.getUserById(userobj.idUser)) {
-                    users.addUser(userobj);
-                    io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
-                }
 
-                // if return from battle
-                if (users.usersWithoutSocket.length !== 0) {
-                    userobj = users.updateIdAfterBattle(socket.id);
-                    io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
-                }
+        // if not already in the list add him & send the update list
+        if (!users.getUserById(userobj.idUser)) {
+            users.addUser(userobj);
+            io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
+        }
 
-                // Remove the user from the list and send it to the front
-                socket.on('NewLogout', (message) => {
+        // if return from battle need to remplace socket
+        if (users.usersWithoutSocket.length !== 0) {
+            userobj = users.updateIdAfterBattle(socket.id);
+            io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
+        }
+
+        // Remove the user from the list and send it to the front
+        socket.on('NewLogout', (message) => {
+            users.removeUser(socket.id);
+            io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
+        });
+
+        // Remove the user from the list and send it to the front
+        socket.on('disconnect', () => {
+            // if user exist not in battle remove him
+            if (users.getUserBySocket(socket.id)) {
+                if ((users.getUserBySocket(socket.id)).available == true) {
                     users.removeUser(socket.id);
                     io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
-                });
 
-                // Remove the user from the list and send it to the front
-                socket.on('disconnect', () => {
-                    console.log('disconnect');
-                    // if user exist not in battle remove him
-                    if (users.getUserBySocket(socket.id)) {
-                        if ((users.getUserBySocket(socket.id)).available == true) {
-                            users.removeUser(socket.id);
-                            io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
-                        }
-                    }
-                });
+                  }
+              }
+          });
+          
+        // end the game end return to main.html
+        socket.on('GiveUpRequest', (me, opponent) => {
 
-                        // end the game by give up
-                socket.on('GiveUpRequest', (me, opponent) => {
+          // Add them to the inBattle array and send give up to opponent
+          inBattle.push(users.getUserBySocket(socket.id));
+          inBattle.push(users.getUserBySocket(opponent.idSocket));
+          socket.broadcast.to(opponent.idSocket).emit('GiveUpRequest', opponent.SocketId);
 
-                  inBattle.push(users.getUserBySocket(socket.id));
-                  inBattle.push(users.getUserBySocket(opponent.idSocket));
-                  socket.broadcast.to(opponent.idSocket).emit('GiveUpRequest', opponent.SocketId);
+          // Remettre le available a true pour les 2 & envoyer la mise a jour
+          users.endBattle(socket.id, opponent.idSocket);
+          setTimeout( () => {io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));}, 3000);
 
-                  // remettre le available a true pour les 2 & envoyer la mise a jour
-                  users.endBattle(socket.id, opponent.idSocket);
-                  setTimeout( () => {
-                    io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
-                  }, 3000);
-
-                  // INCREMENTATION
-                  const increment = firebase.firestore.FieldValue.increment(1);
-                  db.collection("users").doc(opponent.username).update({
-                      win: increment
-                  })
-                      .then(function() {
-                          console.log("INCREMENTATION REUSSIE")
-                      })
-                      .catch(function(error) {
-                          console.error("Error incrementing victory of user " +  opponent.username + ": ", error.message);
-                      });
-                  db.collection("users").doc(me.username).update({
-                        lost: increment
-                    })
-                    .then(function() {
-                        console.log("INCREMENTATION REUSSIE")
-                    })
-                    .catch(function(error) {
-                      console.error("Error incrementing lost of user " +  me.username + ": ", error.message);
-                    });
-                });
-
-
-                  // socket battle
-                  socket.on('battle', (res) => {
-
-                  // recover both opponent
-                    let challenger = users.getUserBySocket(res.challengerSocketId);
-                    let challenged = users.getUserBySocket(res.challengedSocketId);
-
-                    // Verif available & send both in play.html
-                    if (challenger.invite(challenged) == true) {
-
-                      // challenger take black
-                      challenger.color = "black";
-
-                      // challenged take white
-                      challenged.color = "white";
-                      challenged.turn = true;
-
-                      // Add them in list inBattle
-                      inBattle.push(challenger);
-                      inBattle.push(challenged);
-
-                      // Send both in play & update list
-                      io.to(challenger.idSocket).emit('battlePage');
-                      io.to(challenged.idSocket).emit('battlePage');
-
-                      // Wait until they are on play.html
-                      setTimeout( () => {
-                        io.to(challenger.idSocket).emit('UpdateBattle', {
-                          challenger: challenger,
-                          challenged: challenged,
-                          users: users.getUsers()
-
-                        });
-                        io.to(challenged.idSocket).emit('UpdateBattle', {
-                          challenger: challenger,
-                          challenged: challenged,
-                          users: users.getUsers()
-                        });
-                        io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
-                      }, 4000);
-                    }
-                  });
+          // Incrementation
+          const increment = firebase.firestore.FieldValue.increment(1);
+          db.collection("users").doc(opponent.username).update({
+              win: increment
+          }).catch(function(error) {
+                  console.error("Error incrementing victory of user " +  opponent.username + ": ", error.message);
+              });
+          db.collection("users").doc(me.username).update({
+                lost: increment
+            }).catch(function(error) { console.error("Error incrementing lost of user " +  me.username + ": ", error.message);
             });
+        });
+
+
+        // When battle button clicked send both to play.html
+        socket.on('battle', (res) => {
+
+          // recover both opponent
+          let challenger = users.getUserBySocket(res.challengerSocketId);
+          let challenged = users.getUserBySocket(res.challengedSocketId);
+
+          // Verif available & send both in play.html
+          if (challenger.invite(challenged) == true) {
+
+            // challenger take black
+            challenger.color = "black";
+
+            // challenged take white
+            challenged.color = "white";
+            challenged.turn = true;
+
+            // Add them in list inBattle
+            inBattle.push(challenger);
+            inBattle.push(challenged);
+
+            // Send both in play & update list
+            io.to(challenger.idSocket).emit('battlePage');
+            io.to(challenged.idSocket).emit('battlePage');
+
+            // Wait until they are on play.html
+            setTimeout( () => {
+              io.to(challenger.idSocket).emit('UpdateBattle', {
+                challenger: challenger,
+                challenged: challenged,
+                users: users.getUsers()
+
+              });
+              io.to(challenged.idSocket).emit('UpdateBattle', {
+                challenger: challenger,
+                challenged: challenged,
+                users: users.getUsers()
+              });
+              io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
+            }, 4000);
+          }
+        });
+      });
 
 
         // Pass my turn & opponent turn
         socket.on('PassTurn', (res) => {
-          res.me.turn = false;
-          res.opponent.turn = true;
-          socket.emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
-          socket.broadcast.to(res.opponent.idSocket).emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
+            res.me.turn = false;
+            res.opponent.turn = true;
+            socket.emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
+            socket.broadcast.to(res.opponent.idSocket).emit('UpdateBattle', {challenger: res.me, challenged: res.opponent});
         });
 
         // update the adversaire board
         socket.on('UpdateBoardMvt', (res) => {
-          socket.broadcast.to(res.opponent.idSocket).emit('UpdateBoardMvt', res);
+            socket.broadcast.to(res.opponent.idSocket).emit('UpdateBoardMvt', res);
         });
 
         //update opponent board delete
