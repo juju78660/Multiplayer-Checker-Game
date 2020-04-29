@@ -317,12 +317,13 @@ io.on('connection', (socket) => {
         socket.on('GiveUpRequest', (me, opponent) => {
 
           // Add them to the inBattle array and send give up to opponent
-          inBattle.push(users.getUserBySocket(socket.id));
+          inBattle.push(users.getUserBySocket(me.idSocket));
           inBattle.push(users.getUserBySocket(opponent.idSocket));
+
           socket.broadcast.to(opponent.idSocket).emit('GiveUpRequest', opponent.SocketId);
 
           // Remettre le available a true pour les 2 & envoyer la mise a jour
-          users.endBattle(socket.id, opponent.idSocket);
+          users.endBattle(me.idSocket, opponent.idSocket);
           setTimeout( () => {io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));}, 3000);
 
           // Incrementation
@@ -366,38 +367,38 @@ io.on('connection', (socket) => {
         socket.on('battle', (res) => {
 
           // recover both opponent
-          let challenger = users.getUserBySocket(res.challengerSocketId);
+          let me = users.getUserBySocket(res.mySocket);
           let challenged = users.getUserBySocket(res.challengedSocketId);
 
           // Verif available & send both in play.html
-          if (challenger.invite(challenged) == true) {
+          if (me.invite(challenged) == true) {
 
             // challenger take black
-            challenger.color = "black";
+            me.color = "black";
 
             // challenged take white
             challenged.color = "white";
             challenged.turn = true;
 
             // Add them in list inBattle
-            inBattle.push(challenger);
+            inBattle.push(me);
             inBattle.push(challenged);
 
             // Send both in play & update list
-            io.to(challenger.idSocket).emit('battlePage');
+            io.to(me.idSocket).emit('battlePage');
             io.to(challenged.idSocket).emit('battlePage');
 
             // Wait until they are on play.html
             setTimeout( () => {
-              io.to(challenger.idSocket).emit('UpdateBattle', {
-                challenger: challenger,
-                challenged: challenged,
+              io.to(me.idSocket).emit('UpdateBattle', {
+                me: me,
+                opponent: challenged,
                 users: users.getUsers()
 
               });
               io.to(challenged.idSocket).emit('UpdateBattle', {
-                challenger: challenger,
-                challenged: challenged,
+                opponent: me,
+                me: challenged,
                 users: users.getUsers()
               });
               io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));
