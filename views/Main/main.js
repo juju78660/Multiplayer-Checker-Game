@@ -91,4 +91,3 @@ socket.on("updateUserConnected", function (users, dbUsers) {
 socket.on("battlePage", function () {
     location.href = '/play';
 });
-
