@@ -51,10 +51,8 @@ app.get('/register', function(req, res) {
     res.render('Register/register');
 });
 
-var boolDejaConnecte = false;
 app.post('/register', async function(req, res) {
-    boolDejaConnecte = false;
-    var firstStateChange = true;
+    var firstTimeCall = true;
 
     var username = req.body.username;
     var email = req.body.email;
@@ -80,8 +78,6 @@ app.post('/register', async function(req, res) {
                 re_password: req.body.re_password
             });
         });
-
-        var firstTimeCall = true;
         // ADD USER TO DB
         firebase.auth().onAuthStateChanged(function(user)
         {
