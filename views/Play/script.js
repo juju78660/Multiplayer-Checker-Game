@@ -31,7 +31,16 @@ let canAttack;
 
 /*================= all function that allow initialisation of the game ================*/
 
+/*
+	TODO :
+	- trouver d'où vient le coloriage en diag en noir
+	- fin cleanup + ajout commentaires
+	- update board mvt (play.js) éviter duplica code
+	- pb sur déplacement de dames qui devient un pion
+    - vérifier si on annule qu'un pion peut attaquer si on sélectionne un autre pion qui peut aussi attaquer
+ */
 
+//Definition of a checkers
 const checker = function (piece, color, valX, valY) {
 	this.id = piece;
 	this.color = color;
@@ -42,9 +51,11 @@ const checker = function (piece, color, valX, valY) {
 	this.coordX = valX;
 	this.coordY = valY;
 
-	//Actif uniquement lorsqu'on appuie sur un pion
+	//each checkers can be clicked
+	//when clicked it show moves he can do
 	this.id.onclick = function () {
-		if (boolCheckerSelected) { // SI UN PION ETAIT DEJA SELECTIONNE -> ON DE-COLORIE CES CASES
+		//if there was already a checker selected
+		if (boolCheckerSelected) {
 			colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 		}
 		boolCheckerSelected = true;
@@ -57,8 +68,7 @@ const checker = function (piece, color, valX, valY) {
 };
 
 
-//Classe de création des carrés
-//voir plus bas comment est utilisé
+//Allow initialization of a square
 const square_p = function (square, indeX, indeY) {
 	this.id = square;
 	this.ocupied = false;
@@ -69,26 +79,25 @@ const square_p = function (square, indeX, indeY) {
 		if (currentlyAttack) {
 			if (block[selectedPieceY][selectedPieceX].id.attack) {
 				if (boolCheckerSelected && block[indeY][indeX].greySquare) makeMove(indeX, indeY);
-				else if (boolCheckerSelected && !block[indeY][indeX].greySquare) { // SI UNE PIECE EST SELECTIONNEE
-					console.log("Mouvement impossible");
+				else if (boolCheckerSelected && !block[indeY][indeX].greySquare) {
+					console.log("Unauthorized movement ");
 					colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 				} else {
-					console.log("Aucune pièce n'est selectionnée");
+					console.log("No checker selected ");
 					colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 				}
 			} else {
 				console.log(block[selectedPieceY][selectedPieceX].id);
-				console.log("Vous devez sélectionner le pion qui est en cours d'attaque");
+				console.log("A checker is in mode attack, choose it");
 			}
 
 		} else {
 			if (boolCheckerSelected && block[indeY][indeX].greySquare) makeMove(indeX, indeY);
-			else if (boolCheckerSelected && !block[indeY][indeX].greySquare) { // SI UNE PIECE EST SELECTIONNEE
-				console.log("Mouvement impossible");
+			else if (boolCheckerSelected && !block[indeY][indeX].greySquare) {
+				console.log("Unauthorized movement ");
 				colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 			} else {
-				console.log("Aucune pièce n'est selectionnée");
-				colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+				console.log("No checker selected");
 			}
 		}
 
@@ -102,46 +111,38 @@ checker.prototype.setCoord = function(X,Y){
 	this.id.style.top = y + 'px';
 	this.id.style.left = x + 'px';
 };
-//non utilisé
-checker.prototype.changeCoord = function(X,Y){
-	this.coordY +=Y;
-	this.coordX += X;
-};
+
 
 checker.prototype.checkIfKing = function () {
 
 	if(this.coordY === 1 && !this.king && this.color === "white"){
 		this.king = true;
-		//block[selectedPieceY][selectedPieceX].id.king= true;
         this.id.getElementsByTagName('img')[0].setAttribute("src", "double_dame_white.png");
 		console.log("** checker modified to king **");
 	}
 	else if(this.coordY === 10 && !this.king && this.color === "black"){
 		this.king = true;
-		//block[selectedPieceY][selectedPieceX].id.king= true;
         this.id.getElementsByTagName('img')[0].setAttribute("src", "double_dame_black.png");
 		console.log("** checker modified to king **");
 	}
 };
 
-/*===============Initialisation all block =================================*/
+/*===============Initialization all block =================================*/
 
 let k = 1;
 let i;
 let j;
 for (i = 1; i <=10; i++) {
-	//création du tableau à deux dimensions
+	//Initialization of 2D array
 	block[i]= [];
 	for ( j = 1; j <= 10; j++) {
-		//initialisation du bloc avec un carré blanc ou noir selon K
+		//Filling block with all square
 		block[i][j] = new square_p(square_class[k],j,i);
 		k++;
 	}
 }
-	/*==================================================*/
 
-
-/*================Initialisation checker =================================*/
+/*================Initialization checker =================================*/
 
 	// white_checker
 for (i = 1; i < 6; i++){
@@ -211,11 +212,10 @@ for (i = 16; i < 21; i++) {
 	block[4][b_checker[i].coordX].pieceId = i + 100;
 }
 
-/*==============Mouvement of checker=====================*/
+/*==============Movements of checker=====================*/
 
 
-//les square sont dans un tableau à une dimension allant de 1 à 100
-// Permet de récupérer l'indice du carré en fonction des coordonnées
+// return the index of a square
 function returnSquareIndex(x, y) {
 	if (y === 1) return x;
 	else if (y < 10) return (y - 1) * 10 + x;
@@ -279,13 +279,13 @@ function colorieCase(valX, valY, couleur, bool) {
 	}
 }
 
-/**
+/** For a given checker we know if it can attack or do a simple movement
  *
  * @param depX
  * @param depY
- * @return number si pas de mouvemnt possible
- * @return 1 si simple déplacement possible
- * @return 2 si peu attaquer un ennemis
+ * @return 0  No possible movement
+ * @return 1 simple movement allow
+ * @return 2 can attack
  */
 function checkAllDiagonal(depX, depY ) {
 	let x= selectedPieceX +depX;
@@ -333,18 +333,16 @@ function checkAllDiagonal(depX, depY ) {
 	}
 	return 0;
 }
-
-function EffacerPions (list){
+//from a given list having Point, it delete them from the game
+function DeleteChecker (list){
 	var x ;
 	var y;
 	var i;
 	let indexChecker;
-	console.log(list);
 	for(let point of list){
 		x= point.x;
 		y= point.y;
 		block[y][x].ocupied = false;
-		console.log(block[y][x].id);
 		i = returnSquareIndex(x, y);
 		if(block[y][x].pieceId < 100 ) {
 			indexChecker =  block[y][x].pieceId;
@@ -354,14 +352,14 @@ function EffacerPions (list){
 			indexChecker =  block[y][x].pieceId -100;
 			black_checker_class[indexChecker].style.visibility = 'hidden';
 		}
-
-
 		block[y][x] = new square_p(square_class[i], x, y);
 	}
 }
 
-/**
- * @return {number}
+/** For a checker, verify all it's diagonals and return value according to all it's diagonals
+ * @return 0 no movement allow
+ * @retunr 1 simple movement allow
+ * @return 2 attack is possible
  */
 function MaxCheckDiagonals (){
 	let valY = selectedPieceY;
@@ -381,7 +379,6 @@ function MaxCheckDiagonals (){
 		b= checkAllDiagonal(1, -1);
 		a = Math.max(a,b);
 		b= checkAllDiagonal(-1, -1);
-		console.log(a +"a b"+b);
 		return  Math.max(a,b);
 	} else {
 		a= checkAllDiagonal(-1, -1);
@@ -396,11 +393,10 @@ function MaxCheckDiagonals (){
 		b =checkAllDiagonal(1, 1);
 		a  =Math.max(a,b);
 		b=checkAllDiagonal(-1, 1);
-		console.log(a +"a b"+b);
 		return Math.max(a,b);
 	}
 }
-
+//same thing as for a checker but for the king
 function checkDiagKing(depX,depY){
 	let x = selectedPieceX + depX;
 	let y = selectedPieceY + depY;
@@ -456,74 +452,59 @@ function kingMouvement() {
 	return Math.max(a,b,c,d);
 }
 
-//actif uniqument lorsqu'on appuie sur un pion
+//call function to draw path of possible movement
 function showMoves(valX, valY) {
-	//Enregistrement des coordonnées de la pièces qu'on veut déplacer
 
 	canAttack = 0;
-	/**
-	 METTRE LE IF BLANC IF NOIR ET IF TOUR
-	 **/
 
 	selectedPieceX = valX;
 	selectedPieceY = valY;
 	let a =0;
 	let b= 0;
-	// Verifie si bonne couleur & mon tour
+	// Verify if the player can move this color
 	if (me.color === block[selectedPieceY][selectedPieceX].id.color && me.turn === true) {
-		console.log("---------------------------------\n		SHOWMOVES");
-
-
-		if (block[selectedPieceY][selectedPieceX].id.king) { //est un roi
+		if (block[selectedPieceY][selectedPieceX].id.king) { // is a king
 			canAttack = kingMouvement();
 			if(!currentlyAttack)
 				colorieCase(valX, valY, "#685f5b", true);
 			canAttack = 1;
-		} else {//est un pion
+		} else {// a checker
 			canAttack = MaxCheckDiagonals (true);
 
 		}
 	}
 }
 
-//Fait le déplacement, faut d'abord sélectionner un pion (blanc pour l'instant)
-//Puis appuyer sur une case vide alors le pion se déplace
-// LES PIONS NOIR DEMARRENT A L'INDICE 100 -> IL FAUT FAIRE checkerIndex-100 POUR ACCEDER A LA PIECE DANS LA TABLEAU DES PIONS
+//Change position of the selected checker to the new position
 function makeMove(indexX,indexY) {
+    //erase grey path
 	colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 	colorieCase(indexX, indexY, "#BA7A3A", false);
-	//block[selectedPieceY][selectedPieceX].id.attack = true;
-	console.log(block[selectedPieceY][selectedPieceX].id.attack);
-	console.log(selectedPieceX+ "selected X makeMove");
-	console.log(selectedPieceY +" selected Y makeMove");
+	block[indexY][indexX].id.style.background = "#BA7A3A";
+	block[indexY][indexY].greySquare = false;
+    //selected checker can attack
 	if (block[selectedPieceY][selectedPieceX].id.attack === true){
-		console.log(listPossibleChecker);
+		//add the take checker (dead) to the list of checker to delete
 		for(let point of listPossibleChecker){
-
 			if((point.x-indexX > 0) && (indexX >selectedPieceX)) {
 				if((point.y - indexY > 0) && (indexY > selectedPieceY)){
 					listDeadChecker.push(new Point(point.x,point.y));
 					block[point.y][point.x].id.alive = false;
-					console.log("ce test ");
-					console.log(listDeadChecker);
+
 				}else{
 					listDeadChecker.push(new Point(point.x,point.y));
 					block[point.y][point.x].id.alive = false;
 
-					console.log("ce test ");
-					console.log(listDeadChecker);
 				}
 			}else {
 				if((point.y - indexY > 0 ) && (indexY > selectedPieceY)){
 					listDeadChecker.push(new Point(point.x,point.y));
 					block[point.y][point.x].id.alive = false;
-					console.log("ce test ");
-					console.log(listDeadChecker);
+
 				}else {
 					listDeadChecker.push(new Point(point.x,point.y));
 					block[point.y][point.x].id.alive = false;
-					console.log("ce test ");
-					console.log(listDeadChecker);
+
 				}
 			}
 
@@ -531,25 +512,18 @@ function makeMove(indexX,indexY) {
 		listPossibleChecker = [];
 	}
 
-	//console.log(listDeadChecker);
 
-	let startBlock = block[selectedPieceY][selectedPieceX]; // BLOC DE DEPART
-	const destinationBlock = block[indexY][indexX];           // BLOC D'ARRIVEE
-	let checkerIndex = startBlock.pieceId;                  // INDEX DE LA PIECE D'ECHEC
-
-	//affichage de débug
-	if (checkerIndex < 100) console.log("BLANC");
-	else console.log("NOIR");
-	console.log("Piece selectionnee: X:" + selectedPieceX + " Y:" + selectedPieceY);
-	console.log("Case destination: X:" + indexX + " Y:" + indexY);
-	console.log("Bloc départ avant modif: \n Piece id: " + checkerIndex + "\n Occupe: " + startBlock.ocupied + "\n ID: " + startBlock.id);
+	let startBlock = block[selectedPieceY][selectedPieceX];
+	const destinationBlock = block[indexY][indexX];
+	let checkerIndex = startBlock.pieceId;
 
 
-	//Changement de valeur du bloc où se trouvait la pièce avant le déplacement
+
+	//Update block at selected position
 	startBlock.ocupied = false;
 	let index_selected_square = returnSquareIndex(selectedPieceX, selectedPieceY);
 
-	// update adversaire board
+	// update opponent board
 	socket.emit('UpdateBoardMvt', {
 		start_cordx: selectedPieceX,
 		start_cordy: selectedPieceY,
@@ -559,16 +533,11 @@ function makeMove(indexX,indexY) {
 		opponent: opponent
 	});
 
-
-	// Pass my turn & opponent turn
-
-
-	console.log(block[selectedPieceY][selectedPieceX].id);
+    //From where the checker come we put the square that was there
 	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square], selectedPieceX, selectedPieceY);
 
-	//block[1][3].id.style.background = "#41BA3E";
 
-	//Changement de valeur du bloc de destination en fonction de couleur pion
+	//Update destination block and move the checker
 	if (checkerIndex < 100) {
 		w_checker[checkerIndex] = new checker(white_checker_class[checkerIndex], "white", indexX, indexY);
 		w_checker[checkerIndex].setCoord(indexX, indexY);
@@ -588,13 +557,7 @@ function makeMove(indexX,indexY) {
 	block[indexY][indexX].ocupied = true;
 	block[indexY][indexX].pieceId = checkerIndex;
 
-	//affichage de débug
-	console.log("Bloc d'arrivee après modif: \n Piece id: " + destinationBlock.pieceId + "\n Occupe: " + destinationBlock.ocupied + "\n ID: " + destinationBlock.id);
-	console.log("Block départ apres modif: \n Piece id: " + startBlock.pieceId + "\n Occupe: " + startBlock.ocupied + "\n ID: " + startBlock.id);
-	console.log("		MAKEMOVE\n---------------------------------");
-
-
-
+    //Verification if the selected checker can still attack
 	if (currentlyAttack){
 		let tmpX = selectedPieceX;
 		let tmpY = selectedPieceY;
@@ -606,13 +569,13 @@ function makeMove(indexX,indexY) {
 		}else{
 			canAttack = MaxCheckDiagonals(true);
 		}
-		console.log(canAttack+" prise possible ");
+		//if it cannot attack from new position we delete dead checker and pass turn
 		if (canAttack !== 2){
 			colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 			colorieCase(tmpX, tmpY, "#BA7A3A", false);
 			block[tmpY][tmpX].id.attack = false;
 			currentlyAttack = false;
-			EffacerPions(listDeadChecker);
+			DeleteChecker(listDeadChecker);
 			for(let point of listDeadChecker){
 				socket.emit('UpdapteBoardDelete', {
 					coordX: point.x,
@@ -626,9 +589,9 @@ function makeMove(indexX,indexY) {
 				opponent: opponent
 			});
 		}
-	}else {
+	}else { // if it was a simple movement
 		colorieCase(indexX, indexY, "#BA7A3A", false);
-		EffacerPions(listDeadChecker);
+		DeleteChecker(listDeadChecker);
 		block[selectedPieceY][selectedPieceX].id.attack= false;
 		for(let point of listDeadChecker){
 			socket.emit('UpdapteBoardDelete', {
@@ -649,55 +612,56 @@ function makeMove(indexX,indexY) {
 	selectedPieceY = 0;
 	selectedPieceX = 0;
 	boolCheckerSelected = false;
-	verifieFinJeu()
+//	checkEndGame()
 }
 
-function verifieFinJeu() {
-	var nb_pions_blanc_vivant = 0;
-	var nb_pions_noir_vivant = 0;
-	//console.log("ICI{");
-	for(var i in w_checker)
-	{
-		//console.log(w_checker[i]);
-	}
-	//console.log("}ICI");
-	// PLUS DE PIECES D'UN JOUEUR
-
-	// EGALITE SI LE MEME MOUVEMENT SE REPRODUIT 3 FOIS AVEC LE MEME JOUEUR AYANT LA MEME POSSIBILITE DE MOUVEMENT (PAS FORCEMENT CONSECUTIF)
-
-	// EGALITE SI UN SEUL ROI CONTRE UN SEUL ROI
-
-	// SI EN 25 MOUV, AUCUNE PIECE N'EST DEPLACEE OU MANGEE
-
-	// SI COMBAT (3 ROI/2 ROI + 1 PIECE/1 ROI + 2 PIECE) CONTRE 1 ROI
-	return false;
-}
-
-function victory(joueur_gagnant) {
-	var nb_pions_blanc_vivant = 0;
-	var nb_pions_noir_vivant = 0;
-	for(var i in w_checker)
-	{
-		if(w_checker[i].alive == true){
-			nb_pions_blanc_vivant++;
-		}
-	}
-	console.log("ICI" + nb_pions_blanc_vivant);
-	for(var i in b_checker)
-	{
-		if(b_checker[i].alive == true){
-			nb_pions_noir_vivant++;
-		}
-	}
-	console.log("ICI" + nb_pions_blanc_vivant);
-	// PLUS DE PIECES D'UN JOUEUR
-
-	// EGALITE SI LE MEME MOUVEMENT SE REPRODUIT 3 FOIS AVEC LE MEME JOUEUR AYANT LA MEME POSSIBILITE DE MOUVEMENT (PAS FORCEMENT CONSECUTIF)
-
-	// EGALITE SI UN SEUL ROI CONTRE UN SEUL ROI
-
-	// SI EN 25 MOUV, AUCUNE PIECE N'EST DEPLACEE OU MANGEE
-
-	// SI COMBAT (3 ROI/2 ROI + 1 PIECE/1 ROI + 2 PIECE) CONTRE 1 ROI
-	return false;
-}
+// Not developed yet
+// function checkEndGame() {
+// 	var nb_pions_blanc_vivant = 0;
+// 	var nb_pions_noir_vivant = 0;
+// 	//console.log("ICI{");
+// 	for(var i in w_checker)
+// 	{
+// 		//console.log(w_checker[i]);
+// 	}
+// 	//console.log("}ICI");
+// 	// PLUS DE PIECES D'UN JOUEUR
+//
+// 	// EGALITE SI LE MEME MOUVEMENT SE REPRODUIT 3 FOIS AVEC LE MEME JOUEUR AYANT LA MEME POSSIBILITE DE MOUVEMENT (PAS FORCEMENT CONSECUTIF)
+//
+// 	// EGALITE SI UN SEUL ROI CONTRE UN SEUL ROI
+//
+// 	// SI EN 25 MOUV, AUCUNE PIECE N'EST DEPLACEE OU MANGEE
+//
+// 	// SI COMBAT (3 ROI/2 ROI + 1 PIECE/1 ROI + 2 PIECE) CONTRE 1 ROI
+// 	return false;
+// }
+//
+// function victory(joueur_gagnant) {
+// 	var nb_pions_blanc_vivant = 0;
+// 	var nb_pions_noir_vivant = 0;
+// 	for(var i in w_checker)
+// 	{
+// 		if(w_checker[i].alive == true){
+// 			nb_pions_blanc_vivant++;
+// 		}
+// 	}
+// 	console.log("ICI" + nb_pions_blanc_vivant);
+// 	for(var i in b_checker)
+// 	{
+// 		if(b_checker[i].alive == true){
+// 			nb_pions_noir_vivant++;
+// 		}
+// 	}
+// 	console.log("ICI" + nb_pions_blanc_vivant);
+// 	// PLUS DE PIECES D'UN JOUEUR
+//
+// 	// EGALITE SI LE MEME MOUVEMENT SE REPRODUIT 3 FOIS AVEC LE MEME JOUEUR AYANT LA MEME POSSIBILITE DE MOUVEMENT (PAS FORCEMENT CONSECUTIF)
+//
+// 	// EGALITE SI UN SEUL ROI CONTRE UN SEUL ROI
+//
+// 	// SI EN 25 MOUV, AUCUNE PIECE N'EST DEPLACEE OU MANGEE
+//
+// 	// SI COMBAT (3 ROI/2 ROI + 1 PIECE/1 ROI + 2 PIECE) CONTRE 1 ROI
+// 	return false;
+// }

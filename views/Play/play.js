@@ -5,7 +5,6 @@ let opponent;
 socket.on("UpdateBoardMvt", (res) => {
 	block[res.start_cordy][res.start_cordx] = new square_p(square_class[returnSquareIndex(res.start_cordx, res.start_cordy)], res.start_cordx, res.start_cordy);
 
-	//console.log(me);
 	if (res.piece_id < 100) {
 		w_checker[res.piece_id] = new checker(white_checker_class[res.piece_id], "white", res.dest_x, res.dest_y, w_checker[res.piece_id].king);
 		w_checker[res.piece_id].setCoord(res.dest_x, res.dest_y);
@@ -21,7 +20,7 @@ socket.on("UpdateBoardMvt", (res) => {
 
 	}
 
-	//Changement de valeur du bloc de destination
+	//Update destination block
 	block[res.dest_y][res.dest_x].ocupied = true;
 	block[res.dest_y][res.dest_x].pieceId = res.piece_id;
 
@@ -37,29 +36,29 @@ socket.on("UpdateBattle", function (res) {
 		me = res.challenger;
 		opponent = res.challenged;
 	}
-	if(me.turn) document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " - C'est votre tour!";
-	else document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " - C'est au tour de l'ennemi!";
+	if(me.turn) document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " - Your turn !";
+	else document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " - Opponent's turn !";
 });
 
 document.getElementById('giveUpButton').addEventListener('click', function () {
-	if (confirm("Etes-vous sûr de vouloir abandonner la partie?")) {
-		document.getElementById('table').remove(); // EFFACE ECHEQUIER
-		document.getElementById('giveUpButton').remove(); // EFFACE LE BOUTON ABANDON
-		document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "VOUS AVEZ PERDU LA PARTIE PAR ABANDON";
+	if (confirm("Are you sure you want to give up ?")) {
+		document.getElementById('table').remove();
+		document.getElementById('giveUpButton').remove();
+		document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "YOU LOST THE GAME BY ABANDONMENT";
 		setTimeout(redir,3000);
 		socket.emit("GiveUpRequest", me, opponent);
 	} else {
-		console.log("ANNULATION DEMANDE ABANDON");
+		console.log("CANCEL GIVE UP REQUEST");
 	}
 });
 
 // end game by give up
 socket.on("GiveUpRequest", function (res) {
-	document.getElementById('table').remove(); // EFFACE ECHEQUIER
-	document.getElementById('giveUpButton').remove(); // EFFACE LE BOUTON ABANDON
-	document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "VOUS AVEZ GAGNE LA PARTIE PAR ABANDON DE L'ADVERSAIRE";
+	//cleanup before exit
+	document.getElementById('table').remove();
+	document.getElementById('giveUpButton').remove();
+	document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "YOUR OPPENENT GIVE UP, YOU WON !";
 	setTimeout(redir,3000);
-	// AJOUTER CODE POUR FINIR LA PARTIE
 });
 
 function redir(){
@@ -67,19 +66,15 @@ function redir(){
 	console.log("REDIRECTION AUTO DANS 3 SEC");
 }
 
-
+//socket to delete dead checker on the opponent side
 socket.on('UpdapteBoardDelete', (res) => {
 	block[res.coordY][res.coordX].ocupied = false;
 	let i = returnSquareIndex(res.coordX, res.coordY);
-	console.log("bonjour ############");
 	if(block[res.coordY][res.coordX].pieceId < 100 ) {
-		console.log("pion blanc");
 		let indexChecker =  block[res.coordY][res.coordX].pieceId;
 		white_checker_class[indexChecker].style.visibility= 'hidden';
 	}
 	else {
-		console.log("pion noir");
-		console.log(block[res.coordY][res.coordX].id);
 		let indexChecker =  block[res.coordY][res.coordX].pieceId -100;
 		black_checker_class[indexChecker].style.visibility = 'hidden';
 	}
