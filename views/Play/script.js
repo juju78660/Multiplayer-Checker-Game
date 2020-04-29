@@ -33,9 +33,6 @@ let canAttack;
 
 /*
 	TODO :
-	- trouver d'où vient le coloriage en diag en noir
-	- fin cleanup + ajout commentaires
-	- update board mvt (play.js) éviter duplica code
 	- pb sur déplacement de dames qui devient un pion
     - vérifier si on annule qu'un pion peut attaquer si on sélectionne un autre pion qui peut aussi attaquer
  */
@@ -56,14 +53,13 @@ const checker = function (piece, color, valX, valY) {
 	this.id.onclick = function () {
 		//if there was already a checker selected
 		if (boolCheckerSelected) {
-			colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+			putColorOnSquare(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 		}
 		boolCheckerSelected = true;
 		selectedPieceX = valX;
 		selectedPieceY = valY;
 		listPossibleChecker = [];
 		showMoves(valX, valY);
-
 	}
 };
 
@@ -81,13 +77,12 @@ const square_p = function (square, indeX, indeY) {
 				if (boolCheckerSelected && block[indeY][indeX].greySquare) makeMove(indeX, indeY);
 				else if (boolCheckerSelected && !block[indeY][indeX].greySquare) {
 					console.log("Unauthorized movement ");
-					colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+					putColorOnSquare(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 				} else {
 					console.log("No checker selected ");
-					colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+					putColorOnSquare(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 				}
 			} else {
-				console.log(block[selectedPieceY][selectedPieceX].id);
 				console.log("A checker is in mode attack, choose it");
 			}
 
@@ -95,7 +90,7 @@ const square_p = function (square, indeX, indeY) {
 			if (boolCheckerSelected && block[indeY][indeX].greySquare) makeMove(indeX, indeY);
 			else if (boolCheckerSelected && !block[indeY][indeX].greySquare) {
 				console.log("Unauthorized movement ");
-				colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+				putColorOnSquare(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 			} else {
 				console.log("No checker selected");
 			}
@@ -117,12 +112,12 @@ checker.prototype.checkIfKing = function () {
 
 	if(this.coordY === 1 && !this.king && this.color === "white"){
 		this.king = true;
-        this.id.getElementsByTagName('img')[0].setAttribute("src", "double_dame_white.png");
+    this.id.getElementsByTagName('img')[0].setAttribute("src", "double_dame_white.png");
 		console.log("** checker modified to king **");
 	}
 	else if(this.coordY === 10 && !this.king && this.color === "black"){
 		this.king = true;
-        this.id.getElementsByTagName('img')[0].setAttribute("src", "double_dame_black.png");
+    this.id.getElementsByTagName('img')[0].setAttribute("src", "double_dame_black.png");
 		console.log("** checker modified to king **");
 	}
 };
@@ -240,14 +235,14 @@ function LimitOfBoard(x, y) {
 	return x <= 0 || x >= 11 || y <= 0 || y >= 11;
 }
 
-function colorieCase(valX, valY, couleur, bool) {
+function putColorOnSquare(valX, valY, color, bool) {
 	let x = valX;
 	let y = valY;
 	while (!(x === 1)) {
 		x--;
 		y--;
 		if (LimitOfBoard(x, y) || block[y][x].ocupied) break;
-		block[y][x].id.style.background = couleur;
+		block[y][x].id.style.background = color;
 		block[y][x].greySquare = bool;
 	}
 	x = valX;
@@ -256,7 +251,7 @@ function colorieCase(valX, valY, couleur, bool) {
 		x++;
 		y++;
 		if (LimitOfBoard(x, y) || block[y][x].ocupied) break;
-		block[y][x].id.style.background = couleur;
+		block[y][x].id.style.background = color;
 		block[y][x].greySquare = bool;
 	}
 	x = valX;
@@ -265,7 +260,7 @@ function colorieCase(valX, valY, couleur, bool) {
 		x--;
 		y++;
 		if (LimitOfBoard(x, y) || block[y][x].ocupied) break;
-		block[y][x].id.style.background = couleur;
+		block[y][x].id.style.background = color;
 		block[y][x].greySquare = bool;
 	}
 	x = valX;
@@ -274,7 +269,7 @@ function colorieCase(valX, valY, couleur, bool) {
 		x++;
 		y--;
 		if (LimitOfBoard(x, y) || block[y][x].ocupied) break;
-		block[y][x].id.style.background = couleur;
+		block[y][x].id.style.background = color;
 		block[y][x].greySquare = bool;
 	}
 }
@@ -287,7 +282,7 @@ function colorieCase(valX, valY, couleur, bool) {
  * @return 1 simple movement allow
  * @return 2 can attack
  */
-function checkAllDiagonal(depX, depY ) {
+function oneCheckerDiagonal(depX, depY ) {
 	let x= selectedPieceX +depX;
 	let y = selectedPieceY +depY;
 
@@ -361,43 +356,43 @@ function DeleteChecker (list){
  * @retunr 1 simple movement allow
  * @return 2 attack is possible
  */
-function MaxCheckDiagonals (){
+function checkerDiagonals (){
 	let valY = selectedPieceY;
 	let valX = selectedPieceX;
 	let a =0.0;
 	let b =0.0;
 	if (block[selectedPieceY][selectedPieceX].id.color === "white") {
-		a =checkAllDiagonal(-1, 1);
-		b = checkAllDiagonal(1, 1);
+		a =oneCheckerDiagonal(-1, 1);
+		b = oneCheckerDiagonal(1, 1);
 		a= Math.max(a,b);
-		b= checkAllDiagonal(-1, -1);
+		b= oneCheckerDiagonal(-1, -1);
 		if (!LimitOfBoard(valX - 1, valY - 1) && block[valY - 1][valX - 1].ocupied === false) {
 			block[valY - 1][valX - 1].id.style.background = "#BA7A3A";
 			block[valY - 1][valX - 1].greySquare = false;
 		}
 		a= Math.max(a,b);
-		b= checkAllDiagonal(1, -1);
+		b= oneCheckerDiagonal(1, -1);
 		a = Math.max(a,b);
-		b= checkAllDiagonal(-1, -1);
+		b= oneCheckerDiagonal(-1, -1);
 		return  Math.max(a,b);
 	} else {
-		a= checkAllDiagonal(-1, -1);
-		b = checkAllDiagonal(1, -1);
+		a= oneCheckerDiagonal(-1, -1);
+		b = oneCheckerDiagonal(1, -1);
 		a = Math.max(a,b);
-		b =checkAllDiagonal(-1, 1);
+		b =oneCheckerDiagonal(-1, 1);
 		if (!LimitOfBoard(valX - 1, valY + 1) && block[valY + 1][valX - 1].ocupied === false) {
 			block[valY + 1][valX - 1].id.style.background = "#BA7A3A";
 			block[valY + 1][valX - 1].greySquare = false;
 		}
 		a = Math.max(a,b);
-		b =checkAllDiagonal(1, 1);
+		b =oneCheckerDiagonal(1, 1);
 		a  =Math.max(a,b);
-		b=checkAllDiagonal(-1, 1);
+		b=oneCheckerDiagonal(-1, 1);
 		return Math.max(a,b);
 	}
 }
 //same thing as for a checker but for the king
-function checkDiagKing(depX,depY){
+function oneKingDiag(depX,depY){
 	let x = selectedPieceX + depX;
 	let y = selectedPieceY + depY;
 
@@ -445,10 +440,10 @@ function checkDiagKing(depX,depY){
 }
 function kingMouvement() {
 	let a,b,c,d;
-	a =checkDiagKing(1,1);
-	b =checkDiagKing(-1,1);
-	c =checkDiagKing(-1,-1);
-	d =checkDiagKing(1,-1);
+	a =oneKingDiag(1,1);
+	b =oneKingDiag(-1,1);
+	c =oneKingDiag(-1,-1);
+	d =oneKingDiag(1,-1);
 	return Math.max(a,b,c,d);
 }
 
@@ -466,58 +461,60 @@ function showMoves(valX, valY) {
 		if (block[selectedPieceY][selectedPieceX].id.king) { // is a king
 			canAttack = kingMouvement();
 			if(!currentlyAttack)
-				colorieCase(valX, valY, "#685f5b", true);
+				putColorOnSquare(valX, valY, "#685f5b", true);
 			canAttack = 1;
 		} else {// a checker
-			canAttack = MaxCheckDiagonals (true);
+			canAttack = checkerDiagonals (true);
 
 		}
 	}
 }
 
+function updatelistDeadChecker(indexX,indexY){
+	//add the take checker (dead) to the list of checker to delete
+	for(let point of listPossibleChecker){
+		if((point.x-indexX > 0) && (indexX >selectedPieceX)) {
+			if((point.y - indexY > 0) && (indexY > selectedPieceY)){
+				listDeadChecker.push(new Point(point.x,point.y));
+				block[point.y][point.x].id.alive = false;
+
+			}else{
+				listDeadChecker.push(new Point(point.x,point.y));
+				block[point.y][point.x].id.alive = false;
+
+			}
+		}else {
+			if((point.y - indexY > 0 ) && (indexY > selectedPieceY)){
+				listDeadChecker.push(new Point(point.x,point.y));
+				block[point.y][point.x].id.alive = false;
+
+			}else {
+				listDeadChecker.push(new Point(point.x,point.y));
+				block[point.y][point.x].id.alive = false;
+
+			}
+		}
+
+	}
+	listPossibleChecker = [];
+}
+
 //Change position of the selected checker to the new position
 function makeMove(indexX,indexY) {
     //erase grey path
-	colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
-	colorieCase(indexX, indexY, "#BA7A3A", false);
+	putColorOnSquare(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+	putColorOnSquare(indexX, indexY, "#BA7A3A", false);
 	block[indexY][indexX].id.style.background = "#BA7A3A";
 	block[indexY][indexY].greySquare = false;
-    //selected checker can attack
-	if (block[selectedPieceY][selectedPieceX].id.attack === true){
-		//add the take checker (dead) to the list of checker to delete
-		for(let point of listPossibleChecker){
-			if((point.x-indexX > 0) && (indexX >selectedPieceX)) {
-				if((point.y - indexY > 0) && (indexY > selectedPieceY)){
-					listDeadChecker.push(new Point(point.x,point.y));
-					block[point.y][point.x].id.alive = false;
-
-				}else{
-					listDeadChecker.push(new Point(point.x,point.y));
-					block[point.y][point.x].id.alive = false;
-
-				}
-			}else {
-				if((point.y - indexY > 0 ) && (indexY > selectedPieceY)){
-					listDeadChecker.push(new Point(point.x,point.y));
-					block[point.y][point.x].id.alive = false;
-
-				}else {
-					listDeadChecker.push(new Point(point.x,point.y));
-					block[point.y][point.x].id.alive = false;
-
-				}
-			}
-
-		}
-		listPossibleChecker = [];
+    //selected checker did an attack
+	if (block[selectedPieceY][selectedPieceX].id.attack){
+		updatelistDeadChecker(indexX,indexY);
 	}
 
 
 	let startBlock = block[selectedPieceY][selectedPieceX];
 	const destinationBlock = block[indexY][indexX];
 	let checkerIndex = startBlock.pieceId;
-
-
 
 	//Update block at selected position
 	startBlock.ocupied = false;
@@ -536,19 +533,23 @@ function makeMove(indexX,indexY) {
     //From where the checker come we put the square that was there
 	block[selectedPieceY][selectedPieceX] = new square_p(square_class[index_selected_square], selectedPieceX, selectedPieceY);
 
-
 	//Update destination block and move the checker
 	if (checkerIndex < 100) {
+		let isKing = w_checker[checkerIndex].king;
 		w_checker[checkerIndex] = new checker(white_checker_class[checkerIndex], "white", indexX, indexY);
 		w_checker[checkerIndex].setCoord(indexX, indexY);
 		w_checker[checkerIndex].checkIfKing();
+		w_checker[checkerIndex].king = isKing;
+
 		block[indexY][indexX].id = w_checker[checkerIndex];
 
 	}
 	else {
+		let isKing = b_checker[checkerIndex-100].king;
 		b_checker[checkerIndex - 100] = new checker(black_checker_class[checkerIndex - 100], "black", indexX, indexY);
 		b_checker[checkerIndex - 100].setCoord(indexX, indexY);
 		b_checker[checkerIndex - 100].checkIfKing();
+		b_checker[checkerIndex-100].king = isKing;
 		block[indexY][indexX].id = b_checker[checkerIndex - 100];
 
 	}
@@ -563,16 +564,16 @@ function makeMove(indexX,indexY) {
 		let tmpY = selectedPieceY;
 		selectedPieceX = indexX;
 		selectedPieceY = indexY;
-		colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+		putColorOnSquare(selectedPieceX, selectedPieceY, "#BA7A3A", false);
 		if(block[tmpY][tmpY].id.king){
 			canAttack = kingMouvement();
 		}else{
-			canAttack = MaxCheckDiagonals(true);
+			canAttack = checkerDiagonals(true);
 		}
 		//if it cannot attack from new position we delete dead checker and pass turn
 		if (canAttack !== 2){
-			colorieCase(selectedPieceX, selectedPieceY, "#BA7A3A", false);
-			colorieCase(tmpX, tmpY, "#BA7A3A", false);
+			putColorOnSquare(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+			putColorOnSquare(tmpX, tmpY, "#BA7A3A", false);
 			block[tmpY][tmpX].id.attack = false;
 			currentlyAttack = false;
 			DeleteChecker(listDeadChecker);
@@ -590,7 +591,7 @@ function makeMove(indexX,indexY) {
 			});
 		}
 	}else { // if it was a simple movement
-		colorieCase(indexX, indexY, "#BA7A3A", false);
+		putColorOnSquare(indexX, indexY, "#BA7A3A", false);
 		DeleteChecker(listDeadChecker);
 		block[selectedPieceY][selectedPieceX].id.attack= false;
 		for(let point of listDeadChecker){
@@ -612,56 +613,52 @@ function makeMove(indexX,indexY) {
 	selectedPieceY = 0;
 	selectedPieceX = 0;
 	boolCheckerSelected = false;
-//	checkEndGame()
+	checkEndGame()
 }
 
 // Not developed yet
-// function checkEndGame() {
-// 	var nb_pions_blanc_vivant = 0;
-// 	var nb_pions_noir_vivant = 0;
-// 	//console.log("ICI{");
-// 	for(var i in w_checker)
-// 	{
-// 		//console.log(w_checker[i]);
-// 	}
-// 	//console.log("}ICI");
-// 	// PLUS DE PIECES D'UN JOUEUR
-//
-// 	// EGALITE SI LE MEME MOUVEMENT SE REPRODUIT 3 FOIS AVEC LE MEME JOUEUR AYANT LA MEME POSSIBILITE DE MOUVEMENT (PAS FORCEMENT CONSECUTIF)
-//
-// 	// EGALITE SI UN SEUL ROI CONTRE UN SEUL ROI
-//
-// 	// SI EN 25 MOUV, AUCUNE PIECE N'EST DEPLACEE OU MANGEE
-//
-// 	// SI COMBAT (3 ROI/2 ROI + 1 PIECE/1 ROI + 2 PIECE) CONTRE 1 ROI
-// 	return false;
-// }
-//
-// function victory(joueur_gagnant) {
-// 	var nb_pions_blanc_vivant = 0;
-// 	var nb_pions_noir_vivant = 0;
-// 	for(var i in w_checker)
-// 	{
-// 		if(w_checker[i].alive == true){
-// 			nb_pions_blanc_vivant++;
-// 		}
-// 	}
-// 	console.log("ICI" + nb_pions_blanc_vivant);
-// 	for(var i in b_checker)
-// 	{
-// 		if(b_checker[i].alive == true){
-// 			nb_pions_noir_vivant++;
-// 		}
-// 	}
-// 	console.log("ICI" + nb_pions_blanc_vivant);
-// 	// PLUS DE PIECES D'UN JOUEUR
-//
-// 	// EGALITE SI LE MEME MOUVEMENT SE REPRODUIT 3 FOIS AVEC LE MEME JOUEUR AYANT LA MEME POSSIBILITE DE MOUVEMENT (PAS FORCEMENT CONSECUTIF)
-//
-// 	// EGALITE SI UN SEUL ROI CONTRE UN SEUL ROI
-//
-// 	// SI EN 25 MOUV, AUCUNE PIECE N'EST DEPLACEE OU MANGEE
-//
-// 	// SI COMBAT (3 ROI/2 ROI + 1 PIECE/1 ROI + 2 PIECE) CONTRE 1 ROI
-// 	return false;
-// }
+function checkEndGame() {
+	var white_checker_alive = 20;
+	var black_checker_alive = 20;
+	for(var i in w_checker)
+	{
+		if(!w_checker[i].alive) white_checker_alive = white_checker_alive -1;
+		if(!b_checker[i].alive) black_checker_alive = black_checker_alive -1;
+	}
+	let winner;
+	let looser;
+	if(white_checker_alive ===0){
+
+		if(me.color === "black")
+		{
+			winner = me;
+			looser = opponent;
+		}else{
+			winner = opponent;
+			looser = me;
+		}
+	}
+	if(black_checker_alive === 0){
+		if(me.color === "white")
+		{
+			winner = me;
+			looser = opponent;
+		}else{
+			winner = opponent;
+			looser = me;
+		}
+	}
+
+	if(white_checker_alive === 0){
+			socket.emit('EndGame', {
+				winner: winner,
+				looser: looser
+			});
+	}
+	if(black_checker_alive ===0){
+		socket.emit('EndGame', {
+			winner: winner,
+			looser: looser
+		});
+	}
+}

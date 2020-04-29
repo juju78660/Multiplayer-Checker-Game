@@ -312,7 +312,7 @@ io.on('connection', (socket) => {
                   }
               }
           });
-          
+
         // end the game end return to main.html
         socket.on('GiveUpRequest', (me, opponent) => {
 
@@ -338,6 +338,29 @@ io.on('connection', (socket) => {
             });
         });
 
+        socket.on('EndGame', (res) => {
+          // Add them to the inBattle array and send give up to opponent
+          inBattle.push(users.getUserBySocket(res.winner.idSocket));
+          inBattle.push(users.getUserBySocket(res.looser.idSocket));
+          io.to(res.looser.idSocket).emit('EndGame',res);
+          io.to(res.winner.idSocket).emit('EndGame',res);
+
+          // Remettre le available a true pour les 2 & envoyer la mise a jour
+          users.endBattle(res.winner.idSocket, res.looser.idSocket);
+          setTimeout( () => {io.emit('updateUserConnected', users.getUsers(), Array.from(dbUsers));}, 3000);
+
+          // Incrementation
+          const increment = firebase.firestore.FieldValue.increment(1);
+          db.collection("users").doc(res.winner.username).update({
+              win: increment
+          }).catch(function(error) {
+                  console.error("Error incrementing victory of user " +  res.winner.username + ": ", error.message);
+              });
+          db.collection("users").doc(res.looser.username).update({
+                lost: increment
+            }).catch(function(error) { console.error("Error incrementing lost of user " +  res.looser.username + ": ", error.message);
+            });
+        });
 
         // When battle button clicked send both to play.html
         socket.on('battle', (res) => {

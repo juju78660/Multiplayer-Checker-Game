@@ -44,7 +44,7 @@ document.getElementById('giveUpButton').addEventListener('click', function () {
 	if (confirm("Are you sure you want to give up ?")) {
 		document.getElementById('table').remove();
 		document.getElementById('giveUpButton').remove();
-		document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "YOU LOST THE GAME BY ABANDONMENT";
+		document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username +  " YOU LOST THE GAME BY ABANDONMENT";
 		setTimeout(redir,3000);
 		socket.emit("GiveUpRequest", me, opponent);
 	} else {
@@ -57,7 +57,21 @@ socket.on("GiveUpRequest", function (res) {
 	//cleanup before exit
 	document.getElementById('table').remove();
 	document.getElementById('giveUpButton').remove();
-	document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "YOUR OPPENENT GIVE UP, YOU WON !";
+
+	document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " YOUR OPPENENT GIVE UP, YOU WON !";
+	setTimeout(redir,3000);
+});
+
+socket.on("EndGame", function (res) {
+	//cleanup before exit
+	document.getElementById('table').remove();
+	document.getElementById('giveUpButton').remove();
+	if(res.winner.idSocket == socket.id){
+		document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " YOU WON !";
+	}
+	else{
+		document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " YOU LOOSE !";
+	}
 	setTimeout(redir,3000);
 });
 
