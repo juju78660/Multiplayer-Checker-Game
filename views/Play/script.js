@@ -71,7 +71,6 @@ const square_p = function (square, indeX, indeY) {
 	this.pieceId = undefined;
 	this.greySquare = false;
 	this.id.onclick = function () {
-
 		if (currentlyAttack) {
 			if (block[selectedPieceY][selectedPieceX].id.attack) {
 				if (boolCheckerSelected && block[indeY][indeX].greySquare) makeMove(indeX, indeY);
@@ -511,6 +510,19 @@ function makeMove(indexX,indexY) {
 		updatelistDeadChecker(indexX,indexY);
 	}
 
+//Change position of the selected checker to the new position
+function makeMove(indexX,indexY) {
+    //erase grey path
+    console.log(block[selectedPieceY][selectedPieceX].id);
+	putColorOnSquare(selectedPieceX, selectedPieceY, "#BA7A3A", false);
+	putColorOnSquare(indexX, indexY, "#BA7A3A", false);
+	block[indexY][indexX].id.style.background = "#BA7A3A";
+	block[indexY][indexY].greySquare = false;
+    //selected checker did an attack
+	if (block[selectedPieceY][selectedPieceX].id.attack){
+		updatelistDeadChecker(indexX,indexY);
+	}
+
 
 	let startBlock = block[selectedPieceY][selectedPieceX];
 	const destinationBlock = block[indexY][indexX];
@@ -538,7 +550,13 @@ function makeMove(indexX,indexY) {
 		let isKing = w_checker[checkerIndex].king;
 		w_checker[checkerIndex] = new checker(white_checker_class[checkerIndex], "white", indexX, indexY);
 		w_checker[checkerIndex].setCoord(indexX, indexY);
-		w_checker[checkerIndex].checkIfKing();
+		if (!isKing){
+		    w_checker[checkerIndex].checkIfKing();
+		}
+		else {
+		    w_checker[checkerIndex].king = isKing;
+		}
+
 		w_checker[checkerIndex].king = isKing;
 
 		block[indexY][indexX].id = w_checker[checkerIndex];
@@ -548,7 +566,12 @@ function makeMove(indexX,indexY) {
 		let isKing = b_checker[checkerIndex-100].king;
 		b_checker[checkerIndex - 100] = new checker(black_checker_class[checkerIndex - 100], "black", indexX, indexY);
 		b_checker[checkerIndex - 100].setCoord(indexX, indexY);
-		b_checker[checkerIndex - 100].checkIfKing();
+		if (!isKing){
+		    b_checker[checkerIndex - 100].checkIfKing();
+		}
+		else{
+    		b_checker[checkerIndex-100].king = isKing;
+		}
 		b_checker[checkerIndex-100].king = isKing;
 		block[indexY][indexX].id = b_checker[checkerIndex - 100];
 
