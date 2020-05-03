@@ -61,8 +61,8 @@ socket.on("updateUserConnected", function (users, dbUsers) {
                 if(value.username === donnees[0]){
                     btn.addEventListener('click', function () {
                         socket.emit('battle', {
-                          challengedSocketId: value.idSocket,
-                          mySocket: socket.id
+                            challengedSocketId: value.idSocket,
+                            challengerSocketId: socket.id
                         });
                     });
                 }

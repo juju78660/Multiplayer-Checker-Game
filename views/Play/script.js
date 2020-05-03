@@ -111,12 +111,12 @@ checker.prototype.checkIfKing = function () {
 
 	if(this.coordY === 1 && !this.king && this.color === "white"){
 		this.king = true;
-    this.id.getElementsByTagName('img')[0].setAttribute("src", "double_dame_white.png");
+        this.id.getElementsByTagName('img')[0].setAttribute("src", "double_dame_white.png");
 		console.log("** checker modified to king **");
 	}
 	else if(this.coordY === 10 && !this.king && this.color === "black"){
 		this.king = true;
-    this.id.getElementsByTagName('img')[0].setAttribute("src", "double_dame_black.png");
+        this.id.getElementsByTagName('img')[0].setAttribute("src", "double_dame_black.png");
 		console.log("** checker modified to king **");
 	}
 };
@@ -498,17 +498,6 @@ function updatelistDeadChecker(indexX,indexY){
 	listPossibleChecker = [];
 }
 
-//Change position of the selected checker to the new position
-function makeMove(indexX,indexY) {
-    //erase grey path
-	putColorOnSquare(selectedPieceX, selectedPieceY, "#BA7A3A", false);
-	putColorOnSquare(indexX, indexY, "#BA7A3A", false);
-	block[indexY][indexX].id.style.background = "#BA7A3A";
-	block[indexY][indexY].greySquare = false;
-    //selected checker did an attack
-	if (block[selectedPieceY][selectedPieceX].id.attack){
-		updatelistDeadChecker(indexX,indexY);
-	}
 
 //Change position of the selected checker to the new position
 function makeMove(indexX,indexY) {
@@ -550,28 +539,24 @@ function makeMove(indexX,indexY) {
 		let isKing = w_checker[checkerIndex].king;
 		w_checker[checkerIndex] = new checker(white_checker_class[checkerIndex], "white", indexX, indexY);
 		w_checker[checkerIndex].setCoord(indexX, indexY);
-		if (!isKing){
-		    w_checker[checkerIndex].checkIfKing();
+		w_checker[checkerIndex].checkIfKing();
+		if (isKing){
+		    w_checker[checkerIndex].king = true;
 		}
-		else {
-		    w_checker[checkerIndex].king = isKing;
-		}
-
-		w_checker[checkerIndex].king = isKing;
 
 		block[indexY][indexX].id = w_checker[checkerIndex];
+		console.log(block[indexY][indexX].id);
 
 	}
 	else {
 		let isKing = b_checker[checkerIndex-100].king;
 		b_checker[checkerIndex - 100] = new checker(black_checker_class[checkerIndex - 100], "black", indexX, indexY);
 		b_checker[checkerIndex - 100].setCoord(indexX, indexY);
-		if (!isKing){
-		    b_checker[checkerIndex - 100].checkIfKing();
+		b_checker[checkerIndex - 100].checkIfKing();
+		if (isKing){
+    		b_checker[checkerIndex-100].king = true;
 		}
-		else{
-    		b_checker[checkerIndex-100].king = isKing;
-		}
+		
 		b_checker[checkerIndex-100].king = isKing;
 		block[indexY][indexX].id = b_checker[checkerIndex - 100];
 

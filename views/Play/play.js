@@ -28,19 +28,14 @@ socket.on("UpdateBoardMvt", (res) => {
 
 // recover both user
 socket.on("UpdateBattle", function (res) {
-	console.log(res);
-	if (res.me.idSocket == socket.id) {
-		console.log("#if");
-		me = res.me;
-		opponent = res.opponent;
+	if (res.challenged.idSocket == socket.id) {
+		me = res.challenged;
+		opponent = res.challenger;
 	}
 	else {
-		console.log("#Else");
-		me = res.opponent;
-		opponent = res.me;
+		me = res.challenger;
+		opponent = res.challenged;
 	}
-	console.log(me);
-	console.log(opponent);
 	if(me.turn) document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " - Your turn !";
 	else document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " - Opponent's turn !";
 });
@@ -49,8 +44,8 @@ document.getElementById('giveUpButton').addEventListener('click', function () {
 	if (confirm("Are you sure you want to give up ?")) {
 		document.getElementById('table').remove();
 		document.getElementById('giveUpButton').remove();
-		document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username +  " YOU LOST THE GAME BY ABANDONMENT";
-		setTimeout(redir,2000);
+		document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "YOU LOST THE GAME BY ABANDONMENT";
+		setTimeout(redir,3000);
 		socket.emit("GiveUpRequest", me, opponent);
 	} else {
 		console.log("CANCEL GIVE UP REQUEST");
@@ -62,21 +57,7 @@ socket.on("GiveUpRequest", function (res) {
 	//cleanup before exit
 	document.getElementById('table').remove();
 	document.getElementById('giveUpButton').remove();
-
-	document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " YOUR OPPENENT GIVE UP, YOU WON !";
-	setTimeout(redir,3000);
-});
-
-socket.on("EndGame", function (res) {
-	//cleanup before exit
-	document.getElementById('table').remove();
-	document.getElementById('giveUpButton').remove();
-	if(res.winner.idSocket == socket.id){
-		document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " YOU WON !";
-	}
-	else{
-		document.getElementById('nomUtilisateur-indicateurTour').innerHTML = me.username + " YOU LOOSE !";
-	}
+	document.getElementById('nomUtilisateur-indicateurTour').innerHTML = "YOUR OPPENENT GIVE UP, YOU WON !";
 	setTimeout(redir,3000);
 });
 
