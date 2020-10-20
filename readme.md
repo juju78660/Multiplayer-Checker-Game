@@ -1,6 +1,17 @@
-# Multiplayers cheker game
+# Multiplayer Checker Game
+Projet universitaire de création d'un site web permettant de jouer au jeu de dame en ligne.
 
-Web app using Node Js and Express to play checker game in multiplayers
+## Technologies/Langages utilisés:  
+* Node JS - Express/Routes (Routes permettant de gérer les interactions avec le site et rediriger l'utilisateur)  
+* SocketIO (Communication client-serveur, id unique pour chaque utilisateur)  
+* Firebase Authentication (Gestion des utilisateurs)  
+* Cloud Firestore (Stockage des données)  
+* PHP   
+* JS  
+
+
+
+
 
 ## Installation
 
